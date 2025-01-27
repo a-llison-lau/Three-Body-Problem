@@ -62,7 +62,7 @@ function TextPanel() {
         }`}
         style={{
           height: "90vh",
-          boxShadow: "8px 8px 17px 2px rgba(255, 255, 255, 0.5)",
+          boxShadow: "4px 6px 17px 2px rgba(255, 255, 255, 0.5)",
         }}
       >
         {/* Expand button */}
