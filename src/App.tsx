@@ -1,17 +1,16 @@
-// import { useState } from 'react'
-// import reactLogo from './assets/react.svg'
-// import viteLogo from '/vite.svg'
-import './App.css'
-import TextPanel from './components/TextPanel'
+import "./App.css";
+import TextPanel from "./components/TextPanel";
 
 function App() {
   return (
     <>
       <div>
-        <TextPanel></TextPanel>
-      </div> 
+        <div>
+          <TextPanel></TextPanel>
+        </div>
+      </div>
     </>
-  )
+  );
 }
 
-export default App
+export default App;

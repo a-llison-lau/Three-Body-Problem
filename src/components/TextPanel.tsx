@@ -50,7 +50,7 @@ function TextPanel() {
           className="fixed top-4 left-4 text-3xl cursor-pointer z-20 block"
           onClick={togglePanel}
         >
-          <BsArrowBarRight />
+          <BsArrowBarRight color="white" />
         </div>
       )}
 
@@ -60,7 +60,10 @@ function TextPanel() {
             ? "opacity-100 translate-x-0 md:w-1/3 w-full"
             : "opacity-0 -translate-x-full w-0"
         }`}
-        style={{ height: "90vh" }}
+        style={{
+          height: "90vh",
+          boxShadow: "8px 8px 17px 2px rgba(255, 255, 255, 0.5)",
+        }}
       >
         {/* Expand button */}
         {isOpen && (
@@ -79,7 +82,7 @@ function TextPanel() {
               <h2 className="text-xl font-bold text-left">Section 1</h2>
             </div>
             {/* Content of Section 1 */}
-            <div className="mt-4">
+            <div className="mt-4 text-left">
               <MathJaxContext version={3} config={config}>
                 {content.split("\n").map((paragraph, index) => (
                   <div key={index} className="mb-4">
@@ -96,7 +99,7 @@ function TextPanel() {
               <h2 className="text-xl font-bold text-left">Section 2</h2>
             </div>
             {/* Content of Section 2 */}
-            <div className="mt-4">
+            <div className="mt-4 text-left">
               <MathJaxContext version={3} config={config}>
                 {content.split("\n").map((paragraph, index) => (
                   <div key={index} className="mb-4">
