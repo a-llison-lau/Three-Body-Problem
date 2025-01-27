@@ -1,0 +1,116 @@
+import { useState } from "react";
+import { MathJax, MathJaxContext } from "better-react-mathjax";
+import { BsArrowLeftCircle, BsArrowBarRight } from "react-icons/bs";
+
+const config = {
+  loader: { load: ["[tex]/html"] },
+  tex: {
+    packages: { "[+]": ["html"] },
+    inlineMath: [
+      ["$", "$"],
+      ["\\(", "\\)"],
+    ],
+    displayMath: [
+      ["$$", "$$"],
+      ["\\[", "\\]"],
+    ],
+  },
+};
+
+const content = `
+Inside a MathJax block element, one might use both Latex inline math, such as \\(x\\) or \\(\\frac{25x}{10} = 2^{10}\\), but then also switch to Latex display math, like
+\\[\\sum_{n = 100}^{1000}\\left(\\frac{10\\sqrt{n}}{n}\\right)  + \\sum_{n = 100}^{1000}\\left(\\frac{10\\sqrt{n}}{n}\\right) + \\sum_{n = 100}^{1000}\\left(\\frac{10\\sqrt{n}}{n}\\right)\\]
+and then continue with inline math.
+
+Inside a MathJax block element, one might use both Latex inline math, such as \\(x\\) or \\(\\frac{25x}{10} = 2^{10}\\), but then also switch to Latex display math, like
+\\[\\sum_{n = 100}^{1000}\\left(\\frac{10\\sqrt{n}}{n}\\right)\\]
+and then continue with inline math.
+
+Inside a MathJax block element, one might use both Latex inline math, such as \\(x\\) or \\(\\frac{25x}{10} = 2^{10}\\), but then also switch to Latex display math, like
+\\[\\sum_{n = 100}^{1000}\\left(\\frac{10\\sqrt{n}}{n}\\right)\\]
+and then continue with inline math.
+
+Inside a MathJax block element, one might use both Latex inline math, such as \\(x\\) or \\(\\frac{25x}{10} = 2^{10}\\), but then also switch to Latex display math, like
+\\[\\sum_{n = 100}^{1000}\\left(\\frac{10\\sqrt{n}}{n}\\right)\\]
+and then continue with inline math.
+`;
+
+function TextPanel() {
+  const [isOpen, setIsOpen] = useState(true);
+
+  const togglePanel = () => {
+    setIsOpen(!isOpen);
+  };
+
+  return (
+    <div className="relative hidden md:block">
+      {/* Collapse button */}
+      {!isOpen && (
+        <div
+          className="fixed top-4 left-4 text-3xl cursor-pointer z-20"
+          onClick={togglePanel}
+        >
+          <BsArrowBarRight />
+        </div>
+      )}
+
+      <div
+        className={`relative bg-gray-50 p-4 h-screen overflow-x-hidden overflow-y-auto rounded-lg shadow-lg transform transition-all duration-700 ease-in-out ${
+          isOpen
+            ? "opacity-100 translate-x-0 w-1/3"
+            : "opacity-0 -translate-x-full w-0"
+        }`}
+        style={{ height: "90vh" }}
+      >
+        {isOpen && (
+          <div
+            className="absolute top-4 right-4 text-2xl cursor-pointer z-20"
+            onClick={togglePanel}
+          >
+            <BsArrowLeftCircle />
+          </div>
+        )}
+
+        {isOpen && (
+          <>
+            {/* Header for Section 1 */}
+            <div className="sticky -top-4 bg-gray-100 p-4 z-10 -mx-4 -mt-4">
+              <h2 className="text-xl font-bold text-left">Section 1</h2>
+            </div>
+            {/* Content of Section 1 */}
+            <div className="mt-4">
+              <MathJaxContext version={3} config={config}>
+                {content.split("\n").map((paragraph, index) => (
+                  <div key={index} className="mb-4">
+                    <div className="overflow-x-auto">
+                      <MathJax hideUntilTypeset={"first"}>{paragraph}</MathJax>
+                    </div>
+                  </div>
+                ))}
+              </MathJaxContext>
+            </div>
+
+            {/* Header for Section 2 */}
+            <div className="sticky -top-4 bg-gray-100 p-4 z-10 -mx-4 -mt-4">
+              <h2 className="text-xl font-bold text-left">Section 2</h2>
+            </div>
+            {/* Content of Section 2 */}
+            <div className="mt-4">
+              <MathJaxContext version={3} config={config}>
+                {content.split("\n").map((paragraph, index) => (
+                  <div key={index} className="mb-4">
+                    <div className="overflow-x-auto">
+                      <MathJax hideUntilTypeset={"first"}>{paragraph}</MathJax>
+                    </div>
+                  </div>
+                ))}
+              </MathJaxContext>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default TextPanel;
