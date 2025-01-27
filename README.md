@@ -7,7 +7,7 @@ The Three-Body Problem is far from fully solved despite centuries of effort. The
 Run the following commands:
 
 ```
-git clone 
+git clone https://github.com/a-llison-lau/three-body-problem.git
 cd three-body
 npm install
 npm run dev
