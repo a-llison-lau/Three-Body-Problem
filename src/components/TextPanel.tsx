@@ -1,6 +1,11 @@
-import { useState } from "react";
+// import { useState } from "react";
 import { MathJax, MathJaxContext } from "better-react-mathjax";
 import { BsArrowLeftCircle, BsArrowBarRight } from "react-icons/bs";
+
+interface TextPanelProps {
+  isOpen: boolean;
+  onToggle: () => void;
+}
 
 const config = {
   loader: { load: ["[tex]/html"] },
@@ -35,27 +40,21 @@ Inside a MathJax block element, one might use both Latex inline math, such as \\
 and then continue with inline math.
 `;
 
-function TextPanel() {
-  const [isOpen, setIsOpen] = useState(true);
-
-  const togglePanel = () => {
-    setIsOpen(!isOpen);
-  };
-
+function TextPanel({ isOpen, onToggle }: TextPanelProps) {
   return (
     <div className="relative">
       {/* Collapse button */}
       {!isOpen && (
         <div
           className="fixed top-4 left-4 text-3xl cursor-pointer z-20 block"
-          onClick={togglePanel}
+          onClick={onToggle}
         >
           <BsArrowBarRight color="white" />
         </div>
       )}
 
       <div
-        className={`relative bg-gray-50 p-4 h-screen overflow-x-hidden overflow-y-auto rounded-lg shadow-lg transform transition-all duration-700 ease-in-out ${
+        className={`relative bg-gray-50 p-4 h-screen overflow-x-hidden overflow-y-auto rounded-lg shadow-lg transform transition-all duration-1000 ease-in-out ${
           isOpen
             ? "opacity-100 translate-x-0 md:w-1/3 w-full"
             : "opacity-0 -translate-x-full w-0"
@@ -69,7 +68,7 @@ function TextPanel() {
         {isOpen && (
           <div
             className="absolute top-4 right-4 text-2xl cursor-pointer z-20"
-            onClick={togglePanel}
+            onClick={onToggle}
           >
             <BsArrowLeftCircle />
           </div>
