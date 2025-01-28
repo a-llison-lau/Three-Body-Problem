@@ -14,8 +14,8 @@ function App() {
     <>
       <div>
         <div className="relative w-full h-screen overflow-hidden">
-        <TextPanel isOpen={isTextPanelOpen} onToggle={handleTogglePanel} />
-        <Canvas isTextPanelOpen={isTextPanelOpen} />
+        <TextPanel isOpen={isTextPanelOpen} onToggle={handleTogglePanel}/>
+        <Canvas isTextPanelOpen={isTextPanelOpen}/>
         </div>
       </div>
     </>

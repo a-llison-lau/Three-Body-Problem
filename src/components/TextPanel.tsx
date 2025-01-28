@@ -62,7 +62,7 @@ function TextPanel({ isOpen, onToggle }: TextPanelProps) {
         style={{
           height: "90vh",
           boxShadow: "4px 6px 17px 2px rgba(255, 255, 255, 0.5)",
-          zIndex: 10
+          zIndex: 10,
         }}
       >
         {/* Expand button */}
