@@ -78,7 +78,7 @@ function TextPanel({ isOpen, onToggle }: TextPanelProps) {
         {isOpen && (
           <>
             {/* Header for Section 1 */}
-            <div className="sticky -top-4 bg-gray-100 p-4 z-10 -mx-4 -mt-4">
+            <div className="sticky -top-4 bg-gray-100 p-4 z-10 -mx-4 -mt-4 opacity-92 border-b-1">
               <h2 className="text-xl font-bold text-left">Section 1</h2>
             </div>
             {/* Content of Section 1 */}
@@ -95,7 +95,7 @@ function TextPanel({ isOpen, onToggle }: TextPanelProps) {
             </div>
 
             {/* Header for Section 2 */}
-            <div className="sticky -top-4 bg-gray-100 p-4 z-10 -mx-4 -mt-4">
+            <div className="sticky -top-4 bg-gray-100 p-4 z-10 -mx-4 -mt-4 opacity-92">
               <h2 className="text-xl font-bold text-left">Section 2</h2>
             </div>
             {/* Content of Section 2 */}

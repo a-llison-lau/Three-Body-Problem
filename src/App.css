@@ -3,6 +3,18 @@ body {
   height: 100%;
   background-color: black;
 }
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.3s ease;
+}
+
+a:hover {
+  background-color: rgb(50, 50, 50);
+  /* color: white; */
+  border-radius: 3px;
+  padding: 1px 1px; /* Optional: add padding for better appearance */
+}
 
 #root {
   max-width: 1280px;

@@ -16,7 +16,7 @@ function Canvas({ isTextPanelOpen }: CanvasProps) {
       }`}
       style={{ zIndex: 0 }}
     >
-      {/* Container for ThreeJS */}
+      Container for ThreeJS
       <div className="w-full h-full bg-black">
         <ThreeBodyAnimation />
       </div>
