@@ -10,7 +10,7 @@ interface CanvasProps {
 function Canvas({ isTextPanelOpen }: CanvasProps) {
   return (
     <div
-      className={`fixed top-0 right-0 h-screen transition-all duration-700 ease-in-out ${
+      className={`fixed top-0 right-0 h-full transition-all duration-700 ease-in-out ${
         isTextPanelOpen ? "md:w-2/3" : "w-full"
       }
       }`}

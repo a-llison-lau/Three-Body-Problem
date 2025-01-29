@@ -14,10 +14,10 @@ function App() {
   return (
     <>
       <div>
-        <div className="relative w-full h-screen overflow-hidden">
-        <TextPanel isOpen={isTextPanelOpen} onToggle={handleTogglePanel}/>
-        <Canvas isTextPanelOpen={isTextPanelOpen}/>
-        <Authors/>
+        <div className="relative w-full h-full overflow-hidden">
+          <TextPanel isOpen={isTextPanelOpen} onToggle={handleTogglePanel} />
+          <Canvas isTextPanelOpen={isTextPanelOpen} />
+          <Authors />
         </div>
       </div>
     </>
