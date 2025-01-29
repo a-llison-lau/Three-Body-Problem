@@ -16,3 +16,5 @@ npm run dev
 ```
 
 Click on the link returned from running `npm run dev`. This is the local development server (usually on http://localhost:5173, depending on your setup), and the website will be available locally for viewing.
+
+To contribute, 

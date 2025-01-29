@@ -1,10 +1,18 @@
-// import { useState } from "react";
 import { MathJax, MathJaxContext } from "better-react-mathjax";
 import { BsArrowLeftCircle, BsArrowBarRight } from "react-icons/bs";
+import { useEffect, useState } from "react";
 
 interface TextPanelProps {
   isOpen: boolean;
   onToggle: () => void;
+}
+
+interface Section {
+  h1: string;
+  h2: string;
+  h3: string;
+  h4: string;
+  main_text: string;
 }
 
 const config = {
@@ -22,28 +30,72 @@ const config = {
   },
 };
 
-const content = `
-Inside a MathJax block element, one might use both Latex inline math, such as \\(x\\) or \\(\\frac{25x}{10} = 2^{10}\\), but then also switch to Latex display math, like
-\\[\\sum_{n = 100}^{1000}\\left(\\frac{10\\sqrt{n}}{n}\\right)  + \\sum_{n = 100}^{1000}\\left(\\frac{10\\sqrt{n}}{n}\\right) + \\sum_{n = 100}^{1000}\\left(\\frac{10\\sqrt{n}}{n}\\right)\\]
-and then continue with inline math.
+function parseMarkdown(markdown: string): Section[] {
+  const sections: Section[] = [];
+  let currentSection: Section = {
+    h1: "",
+    h2: "",
+    h3: "",
+    h4: "",
+    main_text: "",
+  };
 
-Inside a MathJax block element, one might use both Latex inline math, such as \\(x\\) or \\(\\frac{25x}{10} = 2^{10}\\), but then also switch to Latex display math, like
-\\[\\sum_{n = 100}^{1000}\\left(\\frac{10\\sqrt{n}}{n}\\right)\\]
-and then continue with inline math.
+  const lines = markdown.split("\n");
+  let mainTextBuffer: string[] = [];
 
-Inside a MathJax block element, one might use both Latex inline math, such as \\(x\\) or \\(\\frac{25x}{10} = 2^{10}\\), but then also switch to Latex display math, like
-\\[\\sum_{n = 100}^{1000}\\left(\\frac{10\\sqrt{n}}{n}\\right)\\]
-and then continue with inline math.
+  lines.forEach((line) => {
+    if (line.startsWith("# ")) {
+      // If we have a previous section, save it
+      if (currentSection.h1) {
+        currentSection.main_text = mainTextBuffer.join("\n").trim();
+        sections.push({ ...currentSection });
+      }
+      // Start new section
+      currentSection = {
+        h1: line.slice(2).trim(),
+        h2: "",
+        h3: "",
+        h4: "",
+        main_text: "",
+      };
+      mainTextBuffer = [];
+    } else if (line.startsWith("## ")) {
+      currentSection.h2 = line.slice(3).trim();
+    } else if (line.startsWith("### ")) {
+      currentSection.h3 = line.slice(4).trim();
+    } else if (line.startsWith("#### ")) {
+      currentSection.h4 = line.slice(5).trim();
+    } else {
+      mainTextBuffer.push(line);
+    }
+  });
 
-Inside a MathJax block element, one might use both Latex inline math, such as \\(x\\) or \\(\\frac{25x}{10} = 2^{10}\\), but then also switch to Latex display math, like
-\\[\\sum_{n = 100}^{1000}\\left(\\frac{10\\sqrt{n}}{n}\\right)\\]
-and then continue with inline math.
-`;
+  // Don't forget to add the last section
+  if (currentSection.h1) {
+    currentSection.main_text = mainTextBuffer.join("\n").trim();
+    sections.push(currentSection);
+  }
+
+  return sections;
+}
 
 function TextPanel({ isOpen, onToggle }: TextPanelProps) {
+  const [sections, setSections] = useState<Section[]>([]);
+
+  useEffect(() => {
+    // Load and parse the markdown file
+    fetch("/content.md")
+      .then((response) => response.text())
+      .then((text) => {
+        const parsedSections = parseMarkdown(text);
+        setSections(parsedSections);
+      })
+      .catch((error) => console.error("Error loading markdown:", error));
+  }, []);
+
   return (
     <div className="relative">
-      {/* Collapse button */}
+      {/* Expand button */}
       {!isOpen && (
         <div
           className="fixed top-4 left-4 text-3xl cursor-pointer z-20 block"
@@ -65,52 +117,60 @@ function TextPanel({ isOpen, onToggle }: TextPanelProps) {
           zIndex: 10,
         }}
       >
-        {/* Expand button */}
         {isOpen && (
-          <div
-            className="absolute top-4 right-4 text-2xl cursor-pointer z-20"
-            onClick={onToggle}
-          >
-            <BsArrowLeftCircle />
-          </div>
-        )}
-
-        {isOpen && (
-          <>
-            {/* Header for Section 1 */}
-            <div className="sticky -top-4 bg-gray-100 p-4 z-10 -mx-4 -mt-4 opacity-92 border-b-1">
-              <h2 className="text-xl font-bold text-left">Section 1</h2>
-            </div>
-            {/* Content of Section 1 */}
-            <div className="mt-4 text-left">
-              <MathJaxContext version={3} config={config}>
-                {content.split("\n").map((paragraph, index) => (
-                  <div key={index} className="mb-4">
-                    <div className="overflow-x-auto">
-                      <MathJax hideUntilTypeset={"first"}>{paragraph}</MathJax>
+          <MathJaxContext version={3} config={config}>
+            {sections.map((section, sectionIndex) => (
+              <div key={sectionIndex} className="mb-0">
+                {/* Sticky H1 Header */}
+                <div className="sticky -top-4 p-3 z-10 -mx-4 supports-backdrop-blur:bg-gray-50/80 backdrop-blur-md border-b-1 ">
+                  <h1 className="text-xl font-bold text-left opacity-100">
+                    {section.h1}
+                  </h1>
+                  {/* Collapse button */}
+                  {isOpen && (
+                    <div
+                      className="absolute top-3 right-4 text-2xl cursor-pointer z-20"
+                      onClick={onToggle}
+                    >
+                      <BsArrowLeftCircle />
                     </div>
-                  </div>
-                ))}
-              </MathJaxContext>
-            </div>
+                  )}
+                </div>
 
-            {/* Header for Section 2 */}
-            <div className="sticky -top-4 bg-gray-100 p-4 z-10 -mx-4 -mt-4 opacity-92">
-              <h2 className="text-xl font-bold text-left">Section 2</h2>
-            </div>
-            {/* Content of Section 2 */}
-            <div className="mt-4 text-left">
-              <MathJaxContext version={3} config={config}>
-                {content.split("\n").map((paragraph, index) => (
-                  <div key={index} className="mb-4">
-                    <div className="overflow-x-auto">
-                      <MathJax hideUntilTypeset={"first"}>{paragraph}</MathJax>
-                    </div>
+                {/* Non-sticky headers and content */}
+                <div className="mt-4 text-left">
+                  {section.h2 && (
+                    <h2 className="text-lg font-semibold mt-4 mb-2">
+                      {section.h2}
+                    </h2>
+                  )}
+                  {section.h3 && (
+                    <h3 className="text-md font-medium mt-3 mb-2">
+                      {section.h3}
+                    </h3>
+                  )}
+                  {section.h4 && (
+                    <h4 className="text-sm font-medium mt-2 mb-2">
+                      {section.h4}
+                    </h4>
+                  )}
+
+                  <div className="overflow-x-auto">
+                    <MathJax hideUntilTypeset={"first"}>
+                      {section.main_text.split("\n").map(
+                        (paragraph, index) =>
+                          paragraph.trim() && (
+                            <p key={index} className="mb-4">
+                              {paragraph}
+                            </p>
+                          )
+                      )}
+                    </MathJax>
                   </div>
-                ))}
-              </MathJaxContext>
-            </div>
-          </>
+                </div>
+              </div>
+            ))}
+          </MathJaxContext>
         )}
       </div>
     </div>
