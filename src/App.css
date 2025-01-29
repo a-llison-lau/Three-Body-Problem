@@ -2,6 +2,8 @@ html,
 body {
   height: 100%;
   background-color: black;
+  margin: 0;
+  padding: 0;
 }
 a {
   text-decoration: none;

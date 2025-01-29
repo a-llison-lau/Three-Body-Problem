@@ -106,13 +106,13 @@ function TextPanel({ isOpen, onToggle }: TextPanelProps) {
       )}
 
       <div
-        className={`relative bg-gray-50 p-4 h-screen overflow-x-hidden overflow-y-auto rounded-lg shadow-lg transform transition-all duration-1000 ease-in-out ${
+        className={`relative bg-gray-50 p-4 h-full overflow-x-hidden overflow-y-auto rounded-lg shadow-lg transform transition-all duration-1000 ease-in-out ${
           isOpen
             ? "opacity-100 translate-x-0 md:w-1/3 w-full"
             : "opacity-0 -translate-x-full w-0"
         }`}
         style={{
-          height: "90vh",
+          height: "92vh",
           boxShadow: "4px 6px 17px 2px rgba(255, 255, 255, 0.5)",
           zIndex: 10,
         }}
