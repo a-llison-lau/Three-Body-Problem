@@ -154,7 +154,6 @@ function TextPanel({ isOpen, onToggle }: TextPanelProps) {
                       {section.h4}
                     </h4>
                   )}
-
                   <div className="overflow-x-auto">
                     <MathJax hideUntilTypeset={"first"}>
                       {section.main_text.split("\n").map(

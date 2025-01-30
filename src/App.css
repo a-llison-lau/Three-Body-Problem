@@ -60,3 +60,29 @@ a:hover {
 .read-the-docs {
   color: #888;
 }
+
+/* MathJax Equation Scroll Styles */
+.MathJax_Display {
+  overflow-x: auto;
+  padding-bottom: 10px;
+  scrollbar-width: thin;
+}
+
+.MathJax_Display::-webkit-scrollbar {
+  height: 8px;
+}
+
+.MathJax_Display::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.1);
+}
+
+.MathJax_Display::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.MathJax_Display > mjx-container[jax="CHTML"][display="true"] {
+  white-space: nowrap !important;
+}
+
+
