@@ -12,10 +12,7 @@ a {
 }
 
 a:hover {
-  background-color: rgb(50, 50, 50);
-  /* color: white; */
-  border-radius: 3px;
-  padding: 1px 1px; /* Optional: add padding for better appearance */
+  color: rgb(50, 50, 50);
 }
 
 #root {
