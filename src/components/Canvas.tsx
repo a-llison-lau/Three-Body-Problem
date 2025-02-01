@@ -1,6 +1,3 @@
-// import React from 'react';
-// import ThreeBodyAnimation from "../physics/ThreeBodyAnimation";
-
 import ThreeBodyAnimation from "../physics/ThreeBodyAnimation";
 
 interface CanvasProps {
