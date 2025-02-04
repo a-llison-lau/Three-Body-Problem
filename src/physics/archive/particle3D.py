@@ -1,22 +1,11 @@
-# -*- coding: utf-8 -*-
 """
-Created on Tue Jun 25 14:25:40 2024
-
-@author: henry
-"""
-
-"""
-CompMod Ex2: Particle3D, a class to describe point particles in 3D space
-
-An instance describes a particle in Euclidean 3D space: 
+Particle3D, a class to describe point particles in 3D space. An instance describes a particle in Euclidean 3D space: 
 velocity and position are [3] arrays
 
 Author: Henry Yip
 Number: S2231321
-
 """
 import numpy as np
-
 
 class Particle3D(object):
     """
@@ -47,8 +36,6 @@ class Particle3D(object):
     """
 
     def __init__(self, label, mass, position, velocity):
-    
-        
         """
         Initialises a particle in 3D space.
 
@@ -90,7 +77,7 @@ class Particle3D(object):
         ke: float
             1/2 m v**2
         """
-        Kinetic_Energy= (1/2)*(self.mass)*(np.linalg.norm(self.velocity))**2
+        Kinetic_Energy = (1/2) * (self.mass) * (np.linalg.norm(self.velocity)) ** 2
         return  Kinetic_Energy
     
     def momentum(self):
@@ -99,33 +86,30 @@ class Particle3D(object):
         
         Returns m*v
         """
-        Momentum=(self.mass)*(self.velocity)
+        Momentum = (self.mass) * (self.velocity)
         return Momentum
 
     def update_position_1st(self, dt):
         """
         Return the updated position by r'=r+v*dt as required, where r' is the new position
         """
-        
-        update_position_1st=self.position+dt*(self.velocity)
-        self.position=update_position_1st  
+        update_position_1st = self.position + dt * (self.velocity)
+        self.position = update_position_1st  
     
-
-
     def update_position_2nd(self,dt,force):
         """
         Return the updated position, r', by r'= r+dt·v+dt^2·(f/2m), where f is given by force
         """
-        update_position_2nd=self.position+(dt)*(self.velocity)+(((dt)**2)*force)/(2*self.mass)
-        self.position=update_position_2nd
+        update_position_2nd = self.position + (dt) * (self.velocity)+ (((dt) ** 2) * force) / (2 * self.mass)
+        self.position= update_position_2nd
 
      
     def update_velocity(self, dt, force):
         """
         Return the updated velocity, v', by v'=v+dt·(f/m)
         """
-        Update_Velocity= self.velocity+(dt)*((force)/self.mass)
-        self.velocity=Update_Velocity
+        Update_Velocity = self.velocity + (dt) * ((force) / self.mass)
+        self.velocity = Update_Velocity
     
        
     def update_position_symplectic(self, dt, d_coeff):
@@ -181,7 +165,6 @@ class Particle3D(object):
         self.velocity += dt * force / self.mass
  
     @staticmethod
-    
     def read_line(line):
         """
         Creates a Particle3D instance given a line of text.
@@ -198,14 +181,14 @@ class Particle3D(object):
         -------
         p: Particle3D
         """
-        
-        lst=line.split()
-        label=lst[0]
-        mass=lst[1]
-        position=np.array([float(lst[2]),float(lst[3]),float(lst[4])])
-        velocity=np.array([float(lst[5]),float(lst[6]),float(lst[7])])
-        New_Particle=Particle3D(label, float(mass), position, velocity)
-        return  New_Particle
+        lst = line.split()
+        label = lst[0]
+        mass = lst[1]
+        position = np.array([float(lst[2]),float(lst[3]),float(lst[4])])
+        velocity = np.array([float(lst[5]),float(lst[6]),float(lst[7])])
+        New_Particle = Particle3D(label, float(mass), position, velocity)
+
+        return New_Particle
 
     @staticmethod
     def total_kinetic_energy(particles):
@@ -215,13 +198,10 @@ class Particle3D(object):
         Summing up the kinetic energy of every particle and returning it at the end
         
         """
-        
-      
-        Total_Kinetic_Energy=0
+        Total_Kinetic_Energy = 0
         for p in particles:
-             Total_Kinetic_Energy+=p.kinetic_energy ()
-        return  Total_Kinetic_Energy
-    
+             Total_Kinetic_Energy += p.kinetic_energy()
+        return Total_Kinetic_Energy
   
     @staticmethod
     def com_velocity(particles):
@@ -238,11 +218,11 @@ class Particle3D(object):
         com_vel: array
             Centre-of-mass velocity
         """
-        total_momentum=np.zeros(3)
-        total_mass=0
+        total_momentum = np.zeros(3)
+        total_mass = 0
         for p in particles:
-            total_momentum+=p.momentum()
-            total_mass+=p.mass
-        com_vel=total_momentum/ total_mass    
-        return  com_vel 
+            total_momentum += p.momentum()
+            total_mass += p.mass
+        com_vel = total_momentum / total_mass    
+        return com_vel 
  

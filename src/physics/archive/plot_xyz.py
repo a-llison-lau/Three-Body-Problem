@@ -1,15 +1,12 @@
-#!/usr/bin/env python3
 """
 Simple plotting of XYZ files using matplotlib animations.
 """
-import sys
 import collections
 import argparse
 import numpy as np
 import matplotlib
 import matplotlib.animation
 import matplotlib.pyplot as plt
-import mpl_toolkits.mplot3d
 
 
 def load_xyz(filename):
@@ -55,6 +52,7 @@ def load_xyz(filename):
         # Convert the lists to arrays. This is called a dictionary comprehension.
         data = {name: np.array(d) for name, d in data.items()}
         return data
+
 
 def animate_xyz_2d(data, skip=10, size=8, mode="xy", show_labels=True, interval=50, output=""):
     """
@@ -163,6 +161,7 @@ def animate_xyz_2d(data, skip=10, size=8, mode="xy", show_labels=True, interval=
 
     return anim
 
+
 def plot_xyz_trajectory(data, skip=10, mode="xy", show_labels=True, output=""):
     """
     Make a matplotlib plot of the trejctory of the supplied data.
@@ -195,7 +194,6 @@ def plot_xyz_trajectory(data, skip=10, mode="xy", show_labels=True, output=""):
     else:
         raise ValueError(f"Unknown plotting mode {mode}")
 
-
     # Convert our dictionary to one big 3D array (bodies, time, xyz)
     trajectories = np.array(list(data.values()))
 
@@ -222,7 +220,6 @@ def plot_xyz_trajectory(data, skip=10, mode="xy", show_labels=True, output=""):
         plt.savefig(output)
     else:
         plt.show()
-
 
 
 def animate_xyz_3d(data, skip=10, size=8, interval=50, output=""):
@@ -339,11 +336,6 @@ def recenter_xyz(data, center):
     return output
 
 
-# This is the easiest way to make a good python command-line interface.
-# argparse is a module that comes with python that lets you write a tool that
-# checks what the user types on the command line and complains if they type
-# something that doesn't work.
-# We first define the options.
 parser = argparse.ArgumentParser(description="Animate an XYZ file")
 
 parser.add_argument(
@@ -405,9 +397,6 @@ parser.add_argument(
 )
 
 def main():
-    # In the main function we use the parser object we made above
-    # to read what the user wrote on the command line.  Then we can
-    # use the dot syntax to get the chosen values
     args = parser.parse_args()
     data = load_xyz(args.filename)
 
@@ -432,7 +421,6 @@ def main():
         else:
             animate_xyz_2d(data, skip=args.steps, mode=mode,
                            size=args.size, show_labels=not args.no_labels, interval=args.interval, output=args.output)
-
 
 
 if __name__ == "__main__":

@@ -24,19 +24,16 @@ def compute_separations(particles):
     - separations (3d array): Vector separation of each pair of particles.
     """   
     # n is the number of particles
-    n=len(particles)
+    n = len(particles)
     
     # Size as described in document
     separations = np.zeros((n,n,3)) 
     
     # looping for the ith particle
     for i in range(n):
-            
-        # Ranges from i+1 to n 
          for j in range(i+1, n):
-                
                 # Distance between particles given a coordinate k. 
-                d = ((particles[j].position)-(particles[i].position))
+                d = ((particles[j].position) - (particles[i].position))
                 
                 # The vector from a to b is the negative of the vector from b to a.
                 separations[i][j] = d
@@ -69,9 +66,7 @@ def compute_forces_potential(particles, separations):
     force_array=np.zeros((N,N,3))
       
     potential=0
-
     for i in range(N):
-        
         # Only calculate once for each pair, by Newton's Third Law, Force from a to b has same magnitude but different direction as Force from b to a
         for j in range(i+1,N):
             
@@ -99,7 +94,7 @@ def compute_forces_potential(particles, separations):
     # We are asked to calculate the total force on each particle, so we sum up
     forces=np.sum(force_array, axis=1)
     
-    return forces,potential 
+    return forces, potential 
 
     
   

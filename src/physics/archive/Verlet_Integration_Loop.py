@@ -1,6 +1,6 @@
 import numpy as np
 from particle3D import Particle3D
-import Forces_and_Separations
+from . import Forces_and_Separations
 import sys
 import time
 import matplotlib.pyplot as plt
