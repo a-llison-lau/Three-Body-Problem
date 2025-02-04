@@ -235,7 +235,7 @@ function FigureEightOrbit() {
 
 function ThreeBodyAnimation() {
   return (
-    <Canvas camera={{ position: [0, 0, 5], fov: 75 }}>
+    <Canvas camera={{ position: [0, 0, 3], fov: 75 }}>
       <FigureEightOrbit />
       <OrbitControls />
     </Canvas>
