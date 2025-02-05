@@ -11,9 +11,9 @@ import { OrbitControls } from "@react-three/drei";
 import { BodyConfig } from "../types/types";
 import {
   ruthUpdate,
-  neriUpdate,
-  verletUpdate,
-  eulerUpdate,
+  // neriUpdate,
+  // verletUpdate,
+  // eulerUpdate,
 } from "../utils/computation";
 import { updateBodyTrail } from "../utils/graphics";
 import { FIGURE_8_BODIES } from "../data/initialCondition";
