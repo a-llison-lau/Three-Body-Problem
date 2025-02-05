@@ -60,25 +60,25 @@ def compute_forces_potential(particles, separations):
     G = 1
 
     # N is the number of particles
-    N=len(particles)
+    N = len(particles)
 
     # An array storing the force between 2 particles (i and j) in each component (n)
-    force_array=np.zeros((N,N,3))
+    force_array = np.zeros((N,N,3))
       
-    potential=0
+    potential = 0
     for i in range(N):
         # Only calculate once for each pair, by Newton's Third Law, Force from a to b has same magnitude but different direction as Force from b to a
-        for j in range(i+1,N):
+        for j in range(i+1, N):
             
             # Separation_i_j has size 3, it contains the distance between particle i and particle j (in all 3 components)
             # We have not specified which n component to sum over, so it returns all the components of forces between i and j 
-            separation_i_j=separations[i,j]
+            separation_i_j = separations[i,j]
                    
-            mod_distance=np.linalg.norm(separation_i_j)
+            mod_distance = np.linalg.norm(separation_i_j)
                  
             # Storing masses for particles i and j in variables to shorten code length
-            m_i=particles[i].mass
-            m_j=particles[j].mass
+            m_i = particles[i].mass
+            m_j = particles[j].mass
             
             # Force between two particles is given by GMm\vec{r}/r^3
             force=(G*(m_i)*(m_j)*(separation_i_j))/mod_distance**3

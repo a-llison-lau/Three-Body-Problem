@@ -8,8 +8,14 @@ import {
   AdditiveBlending,
 } from "three";
 import { OrbitControls } from "@react-three/drei";
-import { BodyConfig } from "../types/simulation";
-import { computeBodyForces, updateBodyTrail } from "../utils/physics";
+import { BodyConfig } from "../types/types";
+import {
+  ruthUpdate,
+  updateBodyTrail,
+} from "../utils/utils";
+import {
+  FIGURE_8_BODIES
+} from "../data/initialCondition";
 
 // Shader constants
 const VERTEX_SHADER = `
@@ -33,34 +39,6 @@ const FRAGMENT_SHADER = `
   }
 `;
 
-// Initial conditions for figure-8 orbit
-const FIGURE_8_BODIES: BodyConfig[] = [
-  {
-    id: "0",
-    position: { x: 0.97000436, y: -0.24308753, z: 0 },
-    velocity: { x: 0.93240737 / 2, y: 0.86473146 / 2, z: 0 },
-    mass: 1,
-    color: "red",
-    size: 0.1,
-  },
-  {
-    id: "1",
-    position: { x: -0.97000436, y: 0.24308753, z: 0 },
-    velocity: { x: 0.93240737 / 2, y: 0.86473146 / 2, z: 0 },
-    mass: 1,
-    color: "green",
-    size: 0.1,
-  },
-  {
-    id: "2",
-    position: { x: 0, y: 0, z: 0 },
-    velocity: { x: -0.93240737, y: -0.86473146, z: 0 },
-    mass: 1,
-    color: "blue",
-    size: 0.1,
-  },
-];
-
 // Constants
 const TRAIL_LENGTH = 400;
 const TIME_STEP = 0.01;
@@ -71,7 +49,6 @@ type SimulationBodyProps = {
   trailPositionsRef: number[];
 };
 
-// Individual Body Component
 function SimulationBody({ body, trailRef }: SimulationBodyProps) {
   return (
     <>
@@ -104,23 +81,10 @@ function FigureEightOrbit() {
   const trailPositionsRef = useRef<number[][]>([[], [], []]);
 
   useFrame(() => {
-    const currentBodies = structuredClone(bodies); // Modern deep copy
+    const currentBodies = structuredClone(bodies);
 
-    // Compute forces
-    const forces = computeBodyForces(currentBodies);
-
-    // Update bodies using Verlet integration
-    currentBodies.forEach((body) => {
-      // Update position
-      body.position.x += body.velocity.x * TIME_STEP;
-      body.position.y += body.velocity.y * TIME_STEP;
-      body.position.z += body.velocity.z * TIME_STEP;
-
-      // Update velocity
-      body.velocity.x += (forces[body.id].x / body.mass) * TIME_STEP;
-      body.velocity.y += (forces[body.id].y / body.mass) * TIME_STEP;
-      body.velocity.z += (forces[body.id].z / body.mass) * TIME_STEP;
-    });
+    // Physics logic
+    ruthUpdate(currentBodies, TIME_STEP);
 
     // Update body positions and trails
     currentBodies.forEach((body, i) => {
