@@ -116,7 +116,7 @@ function TextPanel({ isOpen, onToggle }: TextPanelProps) {
       <div
         className={`relative supports-backdrop-blur:bg-white/50 backdrop-blur-2xl text-zinc-300 p-4 h-full overflow-x-hidden overflow-y-auto rounded-lg shadow-lg transform transition-all duration-1000 ease-in-out ${
           isOpen
-            ? "opacity-100 translate-x-0 md:w-1/3 w-full"
+            ? "opacity-100 translate-x-0 md:w-1/3"
             : "opacity-0 -translate-x-full w-0"
         }`}
         style={{
