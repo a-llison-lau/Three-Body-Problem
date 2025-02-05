@@ -1,114 +1,8 @@
-interface ContentNode {
-  // Tree node, each ContentNode is either a heading type or a text type. Contains a string, and has a list of childrens which are also ContentNodes.
-  type: "h1" | "h2" | "h3" | "h4" | "text";
-  content: string;
-  children: ContentNode[];
-}
-
-// Handle collapse and expand
-interface TextPanelProps {
-  isOpen: boolean;
-  onToggle: () => void;
-}
-
-// parseMarkdown.ts
-function parseMarkdown(markdown: string): ContentNode[] {
-  const lines = markdown.split("\n");
-  const root: ContentNode[] = [];
-  let currentH1: ContentNode | null = null;
-  let currentH2: ContentNode | null = null;
-  let currentH3: ContentNode | null = null;
-  let currentH4: ContentNode | null = null;
-
-  // Buffer to accumulate text lines before adding them to a section
-  let textBuffer: string[] = [];
-
-  function flushTextBuffer() {
-    if (textBuffer.length > 0) {
-      const text = textBuffer.join("\n").trim();
-      if (text) {
-        // Add text to the most specific current heading
-        const currentNode = currentH4 || currentH3 || currentH2 || currentH1;
-        if (currentNode) {
-          currentNode.children.push({
-            type: "text",
-            content: text,
-            children: [],
-          });
-        }
-      }
-      textBuffer = [];
-    }
-  }
-
-  lines.forEach((line) => {
-    if (line.startsWith("# ")) {
-      // Flush text before creating new section
-      flushTextBuffer();
-
-      currentH1 = {
-        type: "h1",
-        content: line.slice(2).trim(),
-        children: [],
-      };
-      root.push(currentH1);
-      currentH2 = null;
-      currentH3 = null;
-      currentH4 = null;
-    } else if (line.startsWith("## ")) {
-      flushTextBuffer();
-
-      if (currentH1) {
-        currentH2 = {
-          type: "h2",
-          content: line.slice(3).trim(),
-          children: [],
-        };
-        currentH1.children.push(currentH2);
-        currentH3 = null;
-        currentH4 = null;
-      }
-    } else if (line.startsWith("### ")) {
-      flushTextBuffer();
-
-      if (currentH2) {
-        currentH3 = {
-          type: "h3",
-          content: line.slice(4).trim(),
-          children: [],
-        };
-        currentH2.children.push(currentH3);
-        currentH4 = null;
-      }
-    } else if (line.startsWith("#### ")) {
-      flushTextBuffer();
-
-      if (currentH3) {
-        currentH4 = {
-          type: "h4",
-          content: line.slice(5).trim(),
-          children: [],
-        };
-        currentH3.children.push(currentH4);
-      }
-    } else {
-      // Accumulate text content
-      if (line.trim()) {
-        textBuffer.push(line);
-      }
-    }
-  });
-
-  // Flush any remaining text at the end
-  flushTextBuffer();
-
-  return root;
-}
-
-// TextPanel.tsx
 import { MathJax, MathJaxContext } from "better-react-mathjax";
 import { BsArrowLeftCircle, BsArrowBarRight } from "react-icons/bs";
 import { useEffect, useState } from "react";
+import { ContentNode } from "../types/types";
+import { parseMarkdown } from "../utils/parseMarkdown";
 
 const config = {
   loader: { load: ["[tex]/html"] },
@@ -125,12 +19,18 @@ const config = {
   },
 };
 
-const RenderContent: React.FC<{ node: ContentNode }> = ({ node }) => {
+// Handle collapse and expand
+interface TextPanelProps {
+  isOpen: boolean;
+  onToggle: () => void;
+}
+
+const RenderContent = ({ node }: { node: ContentNode }) => {
   switch (node.type) {
     case "h1":
       return (
         <div className="mb-0">
-          <div className="sticky -top-4 p-3 z-10 -mx-4 supports-backdrop-blur:bg-gray-50/80 backdrop-blur-md border-b-1">
+          <div className="sticky -top-4 p-3 z-10 -mx-4 supports-backdrop-blur:bg-gray-50/80 backdrop-blur-sm border-b-1 border-zinc-300">
             <h1 className="text-xl font-bold text-left opacity-100">
               {node.content}
             </h1>
@@ -214,22 +114,23 @@ function TextPanel({ isOpen, onToggle }: TextPanelProps) {
       )}
 
       <div
-        className={`relative bg-gray-50 p-4 h-full overflow-x-hidden overflow-y-auto rounded-lg shadow-lg transform transition-all duration-1000 ease-in-out ${
+        className={`relative supports-backdrop-blur:bg-white/50 backdrop-blur-2xl text-zinc-300 p-4 h-full overflow-x-hidden overflow-y-auto rounded-lg shadow-lg transform transition-all duration-1000 ease-in-out ${
           isOpen
             ? "opacity-100 translate-x-0 md:w-1/3 w-full"
             : "opacity-0 -translate-x-full w-0"
         }`}
         style={{
           height: "92vh",
-          boxShadow: "4px 6px 17px 2px rgba(255, 255, 255, 0.5)",
+          boxShadow: "6px 6px 17px 2px rgba(49, 49, 49, 0.5)",
           zIndex: 10,
         }}
       >
         {isOpen && (
           <MathJaxContext version={3} config={config}>
+            {/* Collapse button */}
             {isOpen && (
               <div
-                className="absolute top-3 right-4 text-2xl cursor-pointer z-20"
+                className="absolute top-5 right-4 text-2xl cursor-pointer z-20"
                 onClick={onToggle}
               >
                 <BsArrowLeftCircle />

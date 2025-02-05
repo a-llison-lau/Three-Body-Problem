@@ -11,11 +11,12 @@ import { OrbitControls } from "@react-three/drei";
 import { BodyConfig } from "../types/types";
 import {
   ruthUpdate,
-  updateBodyTrail,
-} from "../utils/utils";
-import {
-  FIGURE_8_BODIES
-} from "../data/initialCondition";
+  neriUpdate,
+  verletUpdate,
+  eulerUpdate,
+} from "../utils/computation";
+import { updateBodyTrail } from "../utils/graphics";
+import { FIGURE_8_BODIES } from "../data/initialCondition";
 
 // Shader constants
 const VERTEX_SHADER = `
@@ -85,6 +86,9 @@ function FigureEightOrbit() {
 
     // Physics logic
     ruthUpdate(currentBodies, TIME_STEP);
+    // verletUpdate(currentBodies, TIME_STEP);
+    // eulerUpdate(currentBodies, TIME_STEP);
+    // neriUpdate(currentBodies, TIME_STEP);
 
     // Update body positions and trails
     currentBodies.forEach((body, i) => {

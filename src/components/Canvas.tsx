@@ -1,3 +1,4 @@
+import DropupMenus from "./DropupMenus";
 import ThreeBodyAnimation from "../physics/ThreeBodyAnimation";
 
 interface CanvasProps {
@@ -5,18 +6,20 @@ interface CanvasProps {
 }
 
 function Canvas({ isTextPanelOpen }: CanvasProps) {
+
   return (
     <div
       className={`fixed top-0 right-0 h-full transition-all duration-700 ease-in-out ${
         isTextPanelOpen ? "md:w-2/3" : "w-full"
-      }
       }`}
       style={{ zIndex: 0 }}
     >
-      Container for ThreeJS
+      {/* Container for ThreeJS */}
       <div className="w-full h-full bg-black">
         <ThreeBodyAnimation />
       </div>
+      <DropupMenus />
+
     </div>
   );
 }
