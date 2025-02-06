@@ -30,7 +30,7 @@ const RenderContent = ({ node }: { node: ContentNode }) => {
     case "h1":
       return (
         <div className="mb-0">
-          <div className="sticky -top-4 p-3 z-10 -mx-4 supports-backdrop-blur:bg-gray-50/80 backdrop-blur-sm border-b-1 border-zinc-300">
+          <div className="sticky -top-4 p-3 z-10 -mx-4 supports-backdrop-blur:bg-gray-50/80 backdrop-blur-sm border-b-1 border-zinc-800">
             <h1 className="text-xl font-bold text-left opacity-100">
               {node.content}
             </h1>

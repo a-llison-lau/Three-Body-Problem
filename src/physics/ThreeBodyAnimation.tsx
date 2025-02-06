@@ -10,13 +10,20 @@ import {
 import { OrbitControls } from "@react-three/drei";
 import { BodyConfig } from "../types/types";
 import {
-  ruthUpdate,
-  // neriUpdate,
+  // ruthUpdate,
+  neriUpdate,
   // verletUpdate,
   // eulerUpdate,
 } from "../utils/computation";
 import { updateBodyTrail } from "../utils/graphics";
-import { FIGURE_8_BODIES } from "../data/initialCondition";
+import {
+  FIGURE_8_BODIES,
+  // BUMBLEBEE_BODIES,
+  // BUTTERFLYI_BODIES,
+  // BUTTERFLYII_BODIES,
+  // DRAGONFLY_BODIES,
+} from "../data/initialConditions";
+import { Vector3 } from "../types/types";
 
 // Shader constants
 const VERTEX_SHADER = `
@@ -41,7 +48,7 @@ const FRAGMENT_SHADER = `
 `;
 
 // Constants
-const TRAIL_LENGTH = 400;
+const TRAIL_LENGTH = 1000;
 const TIME_STEP = 0.01;
 
 type SimulationBodyProps = {
@@ -74,32 +81,87 @@ function SimulationBody({ body, trailRef }: SimulationBodyProps) {
   );
 }
 
-// Main Simulation Component
-function FigureEightOrbit() {
+type OrbitProps = {
+  onStatsUpdate?: (stats: {
+    momentumChange: Vector3;
+    energyChange: number;
+    velocities: Vector3[];
+  }) => void;
+};
+
+function Orbit({ onStatsUpdate }: OrbitProps) {
   const [bodies, setBodies] = useState<BodyConfig[]>(FIGURE_8_BODIES);
   const bodiesRef = useRef<(Mesh | null)[]>([null, null, null]);
   const trailRefs = useRef<(BufferGeometry | null)[]>([null, null, null]);
   const trailPositionsRef = useRef<number[][]>([[], [], []]);
 
+  const prevMomentum = useRef<Vector3>({ x: 0, y: 0, z: 0 });
+  const prevEnergy = useRef<number>(0);
+
   useFrame(() => {
     const currentBodies = structuredClone(bodies);
 
     // Physics logic
-    ruthUpdate(currentBodies, TIME_STEP);
+    // ruthUpdate(currentBodies, TIME_STEP);
     // verletUpdate(currentBodies, TIME_STEP);
     // eulerUpdate(currentBodies, TIME_STEP);
-    // neriUpdate(currentBodies, TIME_STEP);
+    neriUpdate(currentBodies, TIME_STEP);
+
+    // Calculate momentum and energy
+    let totalMomentum = { x: 0, y: 0, z: 0 };
+    let kinetic = 0;
+
+    currentBodies.forEach((body) => {
+      totalMomentum.x += body.mass * body.velocity.x;
+      totalMomentum.y += body.mass * body.velocity.y;
+      totalMomentum.z += body.mass * body.velocity.z;
+
+      kinetic +=
+        0.5 *
+        body.mass *
+        (body.velocity.x ** 2 + body.velocity.y ** 2 + body.velocity.z ** 2);
+    });
+
+    // Potential energy
+    let potential = 0;
+    for (let i = 0; i < currentBodies.length; i++) {
+      for (let j = i + 1; j < currentBodies.length; j++) {
+        const dx = currentBodies[j].position.x - currentBodies[i].position.x;
+        const dy = currentBodies[j].position.y - currentBodies[i].position.y;
+        const dz = currentBodies[j].position.z - currentBodies[i].position.z;
+        const r = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        potential -= (1 * currentBodies[i].mass * currentBodies[j].mass) / r;
+      }
+    }
+
+    const totalEnergy = kinetic + potential;
+    const energyChange = totalEnergy - prevEnergy.current;
+    const momentumChange = {
+      x: totalMomentum.x - prevMomentum.current.x,
+      y: totalMomentum.y - prevMomentum.current.y,
+      z: totalMomentum.z - prevMomentum.current.z,
+    };
+
+    prevMomentum.current = totalMomentum;
+    prevEnergy.current = totalEnergy;
+    if (onStatsUpdate) {
+      onStatsUpdate({
+        momentumChange,
+        energyChange,
+        velocities: currentBodies.map((b) => ({ ...b.velocity })),
+      });
+    }
+
+    setBodies(currentBodies);
 
     // Update body positions and trails
     currentBodies.forEach((body, i) => {
-      // Update body position in scene
       bodiesRef.current[i]?.position.set(
         body.position.x,
         body.position.y,
         body.position.z
       );
 
-      // Update trail
       const { positions, colors, sizes } = updateBodyTrail(
         body,
         trailPositionsRef.current[i],
@@ -150,11 +212,10 @@ function FigureEightOrbit() {
   );
 }
 
-// Main Animation Wrapper
-export default function ThreeBodySimulation() {
+export default function ThreeBodySimulation({ onStatsUpdate }: { onStatsUpdate?: OrbitProps["onStatsUpdate"] }) {
   return (
     <Canvas camera={{ position: [0, 0, 2] }}>
-      <FigureEightOrbit />
+      <Orbit onStatsUpdate={onStatsUpdate}/>
       <OrbitControls />
     </Canvas>
   );

@@ -30,7 +30,7 @@ function DropupMenus() {
   );
 
   return (
-    <div className="absolute bottom-0 left-2 m-4">
+    <div className="bottom-0 left-2">
       {/* Orbit Button and Drop-up Menu */}
       <div className="relative">
         <button

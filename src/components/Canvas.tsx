@@ -1,11 +1,19 @@
 import DropupMenus from "./DropupMenus";
 import ThreeBodyAnimation from "../physics/ThreeBodyAnimation";
+import StatsDisplay from "./StatsDisplay";
+import { useState } from "react";
+import { Vector3 } from "../types/types";
 
 interface CanvasProps {
   isTextPanelOpen: boolean;
 }
 
 function Canvas({ isTextPanelOpen }: CanvasProps) {
+  const [simulationStats, setSimulationStats] = useState<{
+    momentumChange: Vector3;
+    energyChange: number;
+    velocities: Vector3[];
+  } | null>(null);
 
   return (
     <div
@@ -14,12 +22,13 @@ function Canvas({ isTextPanelOpen }: CanvasProps) {
       }`}
       style={{ zIndex: 0 }}
     >
-      {/* Container for ThreeJS */}
       <div className="w-full h-full bg-black">
-        <ThreeBodyAnimation />
+        <ThreeBodyAnimation onStatsUpdate={setSimulationStats} />
       </div>
-      <DropupMenus />
-
+      <div className="absolute bottom-0 left-0 flex h-32 w-full p-4 gap-4">
+        <DropupMenus />
+        <StatsDisplay stats={simulationStats} />
+      </div>
     </div>
   );
 }
