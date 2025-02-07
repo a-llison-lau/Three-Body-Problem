@@ -7,13 +7,13 @@ const c4 = [
   1 / (2 * (2 - 2 ** (1 / 3))),
   (1 - 2 ** (1 / 3)) / (2 * (2 - 2 ** (1 / 3))),
   (1 - 2 ** (1 / 3)) / (2 * (2 - 2 ** (1 / 3))),
-  1 / (2 * (2 - 2 ** (1 / 3))),
+  1 / (2 * (2 - 2 ** (1 / 3)))
 ];
 const d4 = [
   1 / (2 - 2 ** (1 / 3)),
   (-1 * 2 ** (1 / 3)) / (2 - 2 ** (1 / 3)),
   1 / (2 - 2 ** (1 / 3)),
-  0,
+  0
 ];
 
 const getDistance = (
@@ -68,6 +68,35 @@ const getBodyForces = (bodies: BodyConfig[]): Record<string, Vector3> => {
   return forces;
 };
 
+const getMomentum = (body: BodyConfig): Vector3 => {
+  const momentumX = body.mass * body.velocity.x;
+  const momentumY = body.mass * body.velocity.y;
+  const momentumZ = body.mass * body.velocity.z;
+
+  return {
+    x: momentumX,
+    y: momentumY,
+    z: momentumZ,
+  };
+};
+
+export const getCoMVelocity = (bodies: BodyConfig[]): Vector3 => {
+  let totalMomemtum = { x: 0, y: 0, z: 0 };
+  let totalMass = 0;
+  bodies.forEach((body) => {
+    const momentum = getMomentum(body);
+    totalMomemtum.x += momentum.x;
+    totalMomemtum.y += momentum.y;
+    totalMomemtum.z += momentum.z;
+    totalMass += body.mass;
+  });
+  const CoMVelocityX = totalMomemtum.x / totalMass;
+  const CoMVelocityY = totalMomemtum.y / totalMass;
+  const CoMVelocityZ = totalMomemtum.z / totalMass;
+
+  return { x: CoMVelocityX, y: CoMVelocityY, z: CoMVelocityZ };
+};
+
 const updatePositionEuler = (body: BodyConfig, timeStep: number): void => {
   body.position.x += timeStep * body.velocity.x;
   body.position.y += timeStep * body.velocity.y;
@@ -94,10 +123,10 @@ const updatePositionSecond = (
     timeStep ** 2 * (forces[body.id].x / (2 * body.mass));
   body.position.y +=
     timeStep * body.velocity.y +
-    timeStep ** 2 * (forces[body.id].x / (2 * body.mass));
+    timeStep ** 2 * (forces[body.id].y / (2 * body.mass));
   body.position.z +=
     timeStep * body.velocity.z +
-    timeStep ** 2 * (forces[body.id].x / (2 * body.mass));
+    timeStep ** 2 * (forces[body.id].z / (2 * body.mass));
 };
 
 const updatePositionSymplectic = (
@@ -149,7 +178,7 @@ export const ruthUpdate = (
     });
     currentBodies.forEach((body) => {
       updatePositionSymplectic(body, timeStep, d3[k]);
-      console.log(body.id, body.position.x);
+      // console.log(body.id, body.position.x);
     });
   }
 };

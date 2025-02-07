@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import {
   Mesh,
@@ -10,18 +10,24 @@ import {
 import { OrbitControls } from "@react-three/drei";
 import { BodyConfig } from "../types/types";
 import {
-  // ruthUpdate,
+  getCoMVelocity,
+  ruthUpdate,
   neriUpdate,
-  // verletUpdate,
-  // eulerUpdate,
+  verletUpdate,
+  eulerUpdate,
 } from "../utils/computation";
 import { updateBodyTrail } from "../utils/graphics";
 import {
   FIGURE_8_BODIES,
-  // BUMBLEBEE_BODIES,
-  // BUTTERFLYI_BODIES,
-  // BUTTERFLYII_BODIES,
-  // DRAGONFLY_BODIES,
+  BUMBLEBEE_BODIES,
+  BUTTERFLYI_BODIES,
+  BUTTERFLYII_BODIES,
+  BUTTERFLYIII_BODIES,
+  BUTTERFLYIV_BODIES,
+  DRAGONFLY_BODIES,
+  MOTHI_BODIES,
+  MOTHII_BODIES,
+  MOTHIII_BODIES,
 } from "../data/initialConditions";
 import { Vector3 } from "../types/types";
 
@@ -87,10 +93,60 @@ type OrbitProps = {
     energyChange: number;
     velocities: Vector3[];
   }) => void;
+  integrator: string;
+  orbit: string;
 };
 
-function Orbit({ onStatsUpdate }: OrbitProps) {
-  const [bodies, setBodies] = useState<BodyConfig[]>(FIGURE_8_BODIES);
+function Orbit({ onStatsUpdate, integrator, orbit }: OrbitProps) {
+  const getInitialBodies = (orbitType: string) => {
+    switch (orbitType) {
+      case "Butterfly I":
+        return BUTTERFLYI_BODIES;
+      case "Butterfly II":
+        return BUTTERFLYII_BODIES;
+      case "Butterfly III":
+        return BUTTERFLYIII_BODIES;
+      case "Butterfly IV":
+        return BUTTERFLYIV_BODIES;
+      case "Bumblebee":
+        return BUMBLEBEE_BODIES;
+      case "Moth I":
+        return MOTHI_BODIES;
+      case "Moth II":
+        return MOTHII_BODIES;
+      case "Moth III":
+        return MOTHIII_BODIES;
+      case "Figure of 8":
+        return FIGURE_8_BODIES;
+      case "Dragonfly":
+        return DRAGONFLY_BODIES;
+      default:
+        return FIGURE_8_BODIES;
+    }
+  };
+
+  const [bodies, setBodies] = useState<BodyConfig[]>(() =>
+    getInitialBodies(orbit)
+  );
+
+  // Centre-of-mass corrections to avoid undesirable drift during long simulations
+  const CoMVelocity = getCoMVelocity(bodies);
+  bodies.forEach((body) => {
+    body.velocity.x -= CoMVelocity.x;
+    body.velocity.y -= CoMVelocity.y;
+    body.velocity.z -= CoMVelocity.z;
+  });
+
+  // Add useEffect to handle orbit changes
+  useEffect(() => {
+    setBodies(getInitialBodies(orbit));
+    // Reset trail positions
+    trailPositionsRef.current = [[], [], []];
+    // Reset momentum and energy references
+    prevMomentum.current = { x: 0, y: 0, z: 0 };
+    prevEnergy.current = 0;
+  }, [orbit]);
+
   const bodiesRef = useRef<(Mesh | null)[]>([null, null, null]);
   const trailRefs = useRef<(BufferGeometry | null)[]>([null, null, null]);
   const trailPositionsRef = useRef<number[][]>([[], [], []]);
@@ -102,10 +158,26 @@ function Orbit({ onStatsUpdate }: OrbitProps) {
     const currentBodies = structuredClone(bodies);
 
     // Physics logic
-    // ruthUpdate(currentBodies, TIME_STEP);
-    // verletUpdate(currentBodies, TIME_STEP);
-    // eulerUpdate(currentBodies, TIME_STEP);
-    neriUpdate(currentBodies, TIME_STEP);
+    switch (integrator) {
+      case "Neri (4th)":
+        neriUpdate(currentBodies, TIME_STEP);
+        console.log("neri is chosen");
+        break;
+      case "Ruth (3rd)":
+        ruthUpdate(currentBodies, TIME_STEP);
+        console.log("ruth is chosen");
+        break;
+      case "Verlet (2nd)":
+        verletUpdate(currentBodies, TIME_STEP);
+        console.log("verlet is chosen");
+        break;
+      case "Euler (1st)":
+        eulerUpdate(currentBodies, TIME_STEP);
+        console.log("euler is chosen");
+        break;
+      default:
+        neriUpdate(currentBodies, TIME_STEP);
+    }
 
     // Calculate momentum and energy
     let totalMomentum = { x: 0, y: 0, z: 0 };
@@ -212,10 +284,22 @@ function Orbit({ onStatsUpdate }: OrbitProps) {
   );
 }
 
-export default function ThreeBodySimulation({ onStatsUpdate }: { onStatsUpdate?: OrbitProps["onStatsUpdate"] }) {
+export default function ThreeBodySimulation({
+  onStatsUpdate,
+  integrator,
+  orbit,
+}: {
+  onStatsUpdate?: OrbitProps["onStatsUpdate"];
+  integrator: string;
+  orbit: string;
+}) {
   return (
     <Canvas camera={{ position: [0, 0, 2] }}>
-      <Orbit onStatsUpdate={onStatsUpdate}/>
+      <Orbit
+        onStatsUpdate={onStatsUpdate}
+        integrator={integrator}
+        orbit={orbit}
+      />
       <OrbitControls />
     </Canvas>
   );

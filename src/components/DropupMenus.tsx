@@ -3,11 +3,13 @@ import { Check, ChevronUp, Circle } from "lucide-react";
 
 // Orbit options
 const orbitOptions = [
+  "Bumblebee",
   "Butterfly I",
   "Butterfly II",
   "Butterfly III",
   "Butterfly IV",
-  "Bumblebee",
+  "Dragonfly",
+  "Figure of 8",
   "Moth I",
   "Moth II",
   "Moth III",
@@ -21,7 +23,12 @@ const integratorOptions = [
   "Euler (1st)",
 ];
 
-function DropupMenus() {
+interface DropupMenusProps {
+  onIntegratorChange: (integrator: string) => void;
+  onOrbitChange: (orbit: string) => void;
+}
+
+function DropupMenus({ onIntegratorChange, onOrbitChange }: DropupMenusProps) {
   const [orbitMenuOpen, setOrbitMenuOpen] = useState(false);
   const [integratorMenuOpen, setIntegratorMenuOpen] = useState(false);
   const [selectedOrbit, setSelectedOrbit] = useState<string | null>(null);
@@ -30,44 +37,47 @@ function DropupMenus() {
   );
 
   return (
-    <div className="bottom-0 left-2">
+    <div>
       {/* Orbit Button and Drop-up Menu */}
-      <div className="relative">
-        <button
-          className="w-32 h-10 supports-backdrop-blur:bg-white/90 backdrop-blur-xl text-zinc-300 rounded-md mb-2 flex items-center justify-between px-3 hover:bg-gray-950"
-          style={{
-            boxShadow: "2px 2px 10px 1px rgba(120, 120, 120, 0.5)",
-            zIndex: 10,
-          }}
-          onClick={() => setOrbitMenuOpen(!orbitMenuOpen)}
-        >
-          {selectedOrbit || "Orbit"}
-          {selectedOrbit ? null : orbitMenuOpen ? (
-            <ChevronUp className="w-4 h-4" />
-          ) : (
-            <Circle className="w-2 h-2" />
+      <div className="flex flex-col">
+        <div className="relative">
+          <button
+            className="w-32 h-10 supports-backdrop-blur:bg-white/90 backdrop-blur-xl text-zinc-300 rounded-md mb-2 flex items-center justify-between px-3 hover:bg-gray-950"
+            style={{
+              boxShadow: "2px 2px 10px 1px rgba(120, 120, 120, 0.5)",
+              zIndex: 10,
+            }}
+            onClick={() => setOrbitMenuOpen(!orbitMenuOpen)}
+          >
+            {selectedOrbit || "Orbit"}
+            {selectedOrbit ? null : orbitMenuOpen ? (
+              <ChevronUp className="w-4 h-4" />
+            ) : (
+              <Circle className="w-2 h-2" />
+            )}
+          </button>
+          {orbitMenuOpen && (
+            <ul className="absolute bottom-full mb-2 w-32 supports-backdrop-blur:bg-white/90 backdrop-blur-xl text-zinc-300 rounded-md overflow-hidden">
+              {orbitOptions.map((option, index) => (
+                <li
+                  key={index}
+                  className="px-4 py-2 text-white hover:bg-gray-900 cursor-pointer flex items-center justify-between"
+                  onClick={() => {
+                    console.log(`Selected Orbit: ${option}`);
+                    setSelectedOrbit(option);
+                    onOrbitChange(option);
+                    setOrbitMenuOpen(false);
+                  }}
+                >
+                  {option}
+                  {selectedOrbit === option && (
+                    <Check className="w-4 h-4 text-green-500" />
+                  )}
+                </li>
+              ))}
+            </ul>
           )}
-        </button>
-        {orbitMenuOpen && (
-          <ul className="absolute bottom-full mb-2 w-32 supports-backdrop-blur:bg-white/90 backdrop-blur-xl text-zinc-300 rounded-md overflow-hidden">
-            {orbitOptions.map((option, index) => (
-              <li
-                key={index}
-                className="px-4 py-2 text-white hover:bg-gray-900 cursor-pointer flex items-center justify-between"
-                onClick={() => {
-                  console.log(`Selected Orbit: ${option}`);
-                  setSelectedOrbit(option);
-                  setOrbitMenuOpen(false);
-                }}
-              >
-                {option}
-                {selectedOrbit === option && (
-                  <Check className="w-4 h-4 text-green-500" />
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
+        </div>
       </div>
 
       {/* Integrator Button and Drop-up Menu */}
@@ -96,6 +106,7 @@ function DropupMenus() {
                 onClick={() => {
                   console.log(`Selected Integrator: ${option}`);
                   setSelectedIntegrator(option);
+                  onIntegratorChange(option);
                   setIntegratorMenuOpen(false);
                 }}
               >
