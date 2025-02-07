@@ -54,8 +54,9 @@ const FRAGMENT_SHADER = `
 `;
 
 // Constants
-const TRAIL_LENGTH = 1000;
+const TRAIL_LENGTH = 1200;
 const TIME_STEP = 0.01;
+const UPDATES_PER_FRAME = 1;
 
 type SimulationBodyProps = {
   body: BodyConfig;
@@ -155,113 +156,114 @@ function Orbit({ onStatsUpdate, integrator, orbit }: OrbitProps) {
   const prevEnergy = useRef<number>(0);
 
   useFrame(() => {
-    const currentBodies = structuredClone(bodies);
+    for (let i = 0; i < UPDATES_PER_FRAME; i++) {
+      const currentBodies = structuredClone(bodies);
 
-    // Physics logic
-    switch (integrator) {
-      case "Neri (4th)":
-        neriUpdate(currentBodies, TIME_STEP);
-        console.log("neri is chosen");
-        break;
-      case "Ruth (3rd)":
-        ruthUpdate(currentBodies, TIME_STEP);
-        console.log("ruth is chosen");
-        break;
-      case "Verlet (2nd)":
-        verletUpdate(currentBodies, TIME_STEP);
-        console.log("verlet is chosen");
-        break;
-      case "Euler (1st)":
-        eulerUpdate(currentBodies, TIME_STEP);
-        console.log("euler is chosen");
-        break;
-      default:
-        neriUpdate(currentBodies, TIME_STEP);
-    }
-
-    // Calculate momentum and energy
-    let totalMomentum = { x: 0, y: 0, z: 0 };
-    let kinetic = 0;
-
-    currentBodies.forEach((body) => {
-      totalMomentum.x += body.mass * body.velocity.x;
-      totalMomentum.y += body.mass * body.velocity.y;
-      totalMomentum.z += body.mass * body.velocity.z;
-
-      kinetic +=
-        0.5 *
-        body.mass *
-        (body.velocity.x ** 2 + body.velocity.y ** 2 + body.velocity.z ** 2);
-    });
-
-    // Potential energy
-    let potential = 0;
-    for (let i = 0; i < currentBodies.length; i++) {
-      for (let j = i + 1; j < currentBodies.length; j++) {
-        const dx = currentBodies[j].position.x - currentBodies[i].position.x;
-        const dy = currentBodies[j].position.y - currentBodies[i].position.y;
-        const dz = currentBodies[j].position.z - currentBodies[i].position.z;
-        const r = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        potential -= (1 * currentBodies[i].mass * currentBodies[j].mass) / r;
+      // Physics logic
+      switch (integrator) {
+        case "Neri (4th)":
+          neriUpdate(currentBodies, TIME_STEP);
+          console.log("neri is chosen");
+          break;
+        case "Ruth (3rd)":
+          ruthUpdate(currentBodies, TIME_STEP);
+          console.log("ruth is chosen");
+          break;
+        case "Verlet (2nd)":
+          verletUpdate(currentBodies, TIME_STEP);
+          console.log("verlet is chosen");
+          break;
+        case "Euler (1st)":
+          eulerUpdate(currentBodies, TIME_STEP);
+          console.log("euler is chosen");
+          break;
+        default:
+          neriUpdate(currentBodies, TIME_STEP);
       }
-    }
 
-    const totalEnergy = kinetic + potential;
-    const energyChange = totalEnergy - prevEnergy.current;
-    const momentumChange = {
-      x: totalMomentum.x - prevMomentum.current.x,
-      y: totalMomentum.y - prevMomentum.current.y,
-      z: totalMomentum.z - prevMomentum.current.z,
-    };
+      // Calculate momentum and energy
+      let totalMomentum = { x: 0, y: 0, z: 0 };
+      let kinetic = 0;
 
-    prevMomentum.current = totalMomentum;
-    prevEnergy.current = totalEnergy;
-    if (onStatsUpdate) {
-      onStatsUpdate({
-        momentumChange,
-        energyChange,
-        velocities: currentBodies.map((b) => ({ ...b.velocity })),
+      currentBodies.forEach((body) => {
+        totalMomentum.x += body.mass * body.velocity.x;
+        totalMomentum.y += body.mass * body.velocity.y;
+        totalMomentum.z += body.mass * body.velocity.z;
+
+        kinetic +=
+          0.5 *
+          body.mass *
+          (body.velocity.x ** 2 + body.velocity.y ** 2 + body.velocity.z ** 2);
       });
-    }
 
-    setBodies(currentBodies);
-
-    // Update body positions and trails
-    currentBodies.forEach((body, i) => {
-      bodiesRef.current[i]?.position.set(
-        body.position.x,
-        body.position.y,
-        body.position.z
-      );
-
-      const { positions, colors, sizes } = updateBodyTrail(
-        body,
-        trailPositionsRef.current[i],
-        TRAIL_LENGTH
-      );
-
-      if (trailRefs.current[i]) {
-        const trail = trailRefs.current[i];
-        trail?.setAttribute(
-          "position",
-          new BufferAttribute(new Float32Array(positions), 3)
-        );
-        trail?.setAttribute(
-          "color",
-          new BufferAttribute(new Float32Array(colors), 3)
-        );
-        trail?.setAttribute(
-          "size",
-          new BufferAttribute(new Float32Array(sizes), 1)
-        );
-
-        trail!.attributes.position.needsUpdate = true;
-        trail!.attributes.color.needsUpdate = true;
-        trail!.attributes.size.needsUpdate = true;
+      // Potential energy
+      let potential = 0;
+      for (let i = 0; i < currentBodies.length; i++) {
+        for (let j = i + 1; j < currentBodies.length; j++) {
+          const dx = currentBodies[j].position.x - currentBodies[i].position.x;
+          const dy = currentBodies[j].position.y - currentBodies[i].position.y;
+          const dz = currentBodies[j].position.z - currentBodies[i].position.z;
+          const r = Math.sqrt(dx * dx + dy * dy + dz * dz);
+          potential -= (1 * currentBodies[i].mass * currentBodies[j].mass) / r;
+        }
       }
-    });
 
-    setBodies(currentBodies);
+      const totalEnergy = kinetic + potential;
+      const energyChange = totalEnergy - prevEnergy.current;
+      const momentumChange = {
+        x: totalMomentum.x - prevMomentum.current.x,
+        y: totalMomentum.y - prevMomentum.current.y,
+        z: totalMomentum.z - prevMomentum.current.z,
+      };
+
+      prevMomentum.current = totalMomentum;
+      prevEnergy.current = totalEnergy;
+      if (onStatsUpdate) {
+        onStatsUpdate({
+          momentumChange,
+          energyChange,
+          velocities: currentBodies.map((b) => ({ ...b.velocity })),
+        });
+      }
+
+      setBodies(currentBodies);
+
+      // Update body positions and trails
+      currentBodies.forEach((body, i) => {
+        bodiesRef.current[i]?.position.set(
+          body.position.x,
+          body.position.y,
+          body.position.z
+        );
+
+        const { positions, colors, sizes } = updateBodyTrail(
+          body,
+          trailPositionsRef.current[i],
+          TRAIL_LENGTH
+        );
+
+        if (trailRefs.current[i]) {
+          const trail = trailRefs.current[i];
+          trail?.setAttribute(
+            "position",
+            new BufferAttribute(new Float32Array(positions), 3)
+          );
+          trail?.setAttribute(
+            "color",
+            new BufferAttribute(new Float32Array(colors), 3)
+          );
+          trail?.setAttribute(
+            "size",
+            new BufferAttribute(new Float32Array(sizes), 1)
+          );
+
+          trail!.attributes.position.needsUpdate = true;
+          trail!.attributes.color.needsUpdate = true;
+          trail!.attributes.size.needsUpdate = true;
+        }
+      });
+      setBodies(currentBodies);
+    }
   });
 
   return (
