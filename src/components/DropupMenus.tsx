@@ -40,7 +40,7 @@ function DropupMenus({ onIntegratorChange, onOrbitChange }: DropupMenusProps) {
     <div>
       {/* Orbit Button and Drop-up Menu */}
       <div className="flex flex-col">
-        <div className="relative">
+        <div className="relative ml-5">
           <button
             className="w-32 h-10 supports-backdrop-blur:bg-white/90 backdrop-blur-xl text-zinc-300 rounded-md mb-2 flex items-center justify-between px-3 hover:bg-gray-950"
             style={{
@@ -81,7 +81,7 @@ function DropupMenus({ onIntegratorChange, onOrbitChange }: DropupMenusProps) {
       </div>
 
       {/* Integrator Button and Drop-up Menu */}
-      <div className="relative">
+      <div className="relative ml-5">
         <button
           className="w-32 h-10 supports-backdrop-blur:bg-white/90 backdrop-blur-xl text-zinc-300 rounded-md mb-2 flex items-center justify-between px-3 hover:bg-gray-950"
           style={{
