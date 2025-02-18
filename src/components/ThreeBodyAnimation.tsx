@@ -1,35 +1,34 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import {
-  Mesh,
   BufferGeometry,
   NormalBufferAttributes,
   BufferAttribute,
   AdditiveBlending,
+  ShaderMaterial,
 } from "three";
 import { OrbitControls } from "@react-three/drei";
-import { BodyConfig } from "../types/types";
-import {
-  getCoMVelocity,
-  ruthUpdate,
-  neriUpdate,
-  verletUpdate,
-  eulerUpdate,
-} from "../utils/computation";
-import { updateBodyTrail } from "../utils/graphics";
-import {
-  FIGURE_8_BODIES,
-  BUMBLEBEE_BODIES,
-  BUTTERFLYI_BODIES,
-  BUTTERFLYII_BODIES,
-  BUTTERFLYIII_BODIES,
-  BUTTERFLYIV_BODIES,
-  DRAGONFLY_BODIES,
-  MOTHI_BODIES,
-  MOTHII_BODIES,
-  MOTHIII_BODIES,
-} from "../data/initialConditions";
-import { Vector3 } from "../types/types";
+
+// Types
+interface Vector3 {
+  x: number;
+  y: number;
+  z: number;
+}
+
+interface BodyConfig {
+  id: string;
+  position: Vector3;
+  velocity: Vector3;
+  mass: number;
+  color: string;
+}
+
+interface FrameData {
+  momentumChange: Vector3;
+  energyChange: number;
+  bodies: BodyConfig[];
+}
 
 // Shader constants
 const VERTEX_SHADER = `
@@ -55,34 +54,86 @@ const FRAGMENT_SHADER = `
 
 // Constants
 const TRAIL_LENGTH = 1200;
-const TIME_STEP = 0.01;
-const UPDATES_PER_FRAME = 1;
+
+// Utility function for trail updates
+function updateBodyTrail(
+  body: BodyConfig,
+  trailPositions: number[],
+  maxLength: number
+) {
+  // Add new position to the trail
+  trailPositions.push(body.position.x, body.position.y, body.position.z);
+
+  // Trim trail if too long
+  while (trailPositions.length > maxLength * 3) {
+    trailPositions.splice(0, 3);
+  }
+
+  // Create arrays for the trail visualization
+  const positions = new Float32Array(trailPositions);
+  const colors = new Float32Array(trailPositions.length);
+  const sizes = new Float32Array(trailPositions.length / 3);
+
+  // Fill color and size arrays
+  for (let i = 0; i < positions.length / 3; i++) {
+    const alpha = i / (positions.length / 3);
+    // Parse color string to RGB values
+    const color =
+      body.color === "red"
+        ? [1, 0, 0]
+        : body.color === "blue"
+        ? [0, 0, 1]
+        : [0, 1, 0];
+
+    colors[i * 3] = color[0];
+    colors[i * 3 + 1] = color[1];
+    colors[i * 3 + 2] = color[2];
+    sizes[i] = alpha * 2;
+  }
+
+  return { positions, colors, sizes };
+}
 
 type SimulationBodyProps = {
   body: BodyConfig;
   trailRef: (node: BufferGeometry<NormalBufferAttributes> | null) => void;
-  trailPositionsRef: number[];
+  updateTrail: (positions: number[]) => void;
+  trailHistory: number[];
 };
 
-function SimulationBody({ body, trailRef }: SimulationBodyProps) {
+function SimulationBody({
+  body,
+  trailRef,
+  updateTrail,
+  trailHistory,
+}: SimulationBodyProps) {
+  const shaderMaterial = useMemo(
+    () =>
+      new ShaderMaterial({
+        vertexShader: VERTEX_SHADER,
+        fragmentShader: FRAGMENT_SHADER,
+        transparent: true,
+        depthWrite: false,
+        blending: AdditiveBlending,
+      }),
+    []
+  );
+
+  // Update trail on each frame
+  useFrame(() => {
+    updateTrail(trailHistory);
+  });
+
   return (
     <>
-      {/* Body Sphere */}
       <mesh position={[body.position.x, body.position.y, body.position.z]}>
-        <sphereGeometry args={[body.size, 32, 32]} />
+        <sphereGeometry args={[0.1, 32, 32]} />
         <meshStandardMaterial color={body.color} />
       </mesh>
 
-      {/* Trail */}
       <points>
         <bufferGeometry ref={trailRef} />
-        <shaderMaterial
-          vertexShader={VERTEX_SHADER}
-          fragmentShader={FRAGMENT_SHADER}
-          transparent
-          depthWrite={false}
-          blending={AdditiveBlending}
-        />
+        <primitive object={shaderMaterial} />
       </points>
     </>
   );
@@ -99,194 +150,191 @@ type OrbitProps = {
 };
 
 function Orbit({ onStatsUpdate, integrator, orbit }: OrbitProps) {
-  const getInitialBodies = (orbitType: string) => {
-    switch (orbitType) {
-      case "Butterfly I":
-        return BUTTERFLYI_BODIES;
-      case "Butterfly II":
-        return BUTTERFLYII_BODIES;
-      case "Butterfly III":
-        return BUTTERFLYIII_BODIES;
-      case "Butterfly IV":
-        return BUTTERFLYIV_BODIES;
-      case "Bumblebee":
-        return BUMBLEBEE_BODIES;
-      case "Moth I":
-        return MOTHI_BODIES;
-      case "Moth II":
-        return MOTHII_BODIES;
-      case "Moth III":
-        return MOTHIII_BODIES;
-      case "Figure of 8":
-        return FIGURE_8_BODIES;
-      case "Dragonfly":
-        return DRAGONFLY_BODIES;
-      default:
-        return FIGURE_8_BODIES;
-    }
-  };
+  const [frames, setFrames] = useState<FrameData[]>([]);
+  const [frameIndex, setFrameIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [bodies, setBodies] = useState<BodyConfig[]>(() =>
-    getInitialBodies(orbit)
-  );
-
-  // Centre-of-mass corrections to avoid undesirable drift during long simulations
-  const CoMVelocity = getCoMVelocity(bodies);
-  bodies.forEach((body) => {
-    body.velocity.x -= CoMVelocity.x;
-    body.velocity.y -= CoMVelocity.y;
-    body.velocity.z -= CoMVelocity.z;
-  });
-
-  // Add useEffect to handle orbit changes
-  useEffect(() => {
-    setBodies(getInitialBodies(orbit));
-    // Reset trail positions
-    trailPositionsRef.current = [[], [], []];
-    // Reset momentum and energy references
-    prevMomentum.current = { x: 0, y: 0, z: 0 };
-    prevEnergy.current = 0;
-  }, [orbit]);
-
-  const bodiesRef = useRef<(Mesh | null)[]>([null, null, null]);
   const trailRefs = useRef<(BufferGeometry | null)[]>([null, null, null]);
   const trailPositionsRef = useRef<number[][]>([[], [], []]);
 
-  const prevMomentum = useRef<Vector3>({ x: 0, y: 0, z: 0 });
-  const prevEnergy = useRef<number>(0);
+  // Mapping constants
+  const integratorMap: { [key: string]: string } = {
+    "Neri (4th)": "4",
+    "Ruth (3rd)": "3",
+    "Verlet (2nd)": "2",
+    "Euler (1st)": "1",
+  };
+
+  const orbitFileMap: { [key: string]: string } = {
+    "Figure of 8": "fo8.txt",
+    "Butterfly I": "butterfly1.txt",
+    "Butterfly II": "butterfly2.txt",
+    "Butterfly III": "butterfly3.txt",
+    "Butterfly IV": "butterfly4.txt",
+    "Bumblebee": "bumblebee.txt",
+    "Dragonfly": "dragonfly.txt",
+    "Moth I": "moth1.txt",
+    "Moth II": "moth2.txt",
+    "Moth III": "moth3.txt",
+  };
+
+  useEffect(() => {
+    const integratorFolder = integratorMap[integrator] || "4";
+    const orbitFile = orbitFileMap[orbit] || "fo8.txt";
+    const filePath = `/position_files/${integratorFolder}/${orbitFile}`;
+
+    setIsLoading(true);
+    setError(null);
+
+    fetch(filePath)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text();
+      })
+      .then((text) => {
+        const parsedFrames: FrameData[] = [];
+        const lines = text.split(/\r?\n/).filter((line) => line.trim() !== "");
+
+        let i = 0;
+        while (i + 4 < lines.length) {
+          const dMomentumLine = lines[i++].trim();
+          const momentumTokens = dMomentumLine.split(/[ =]+/).filter(Boolean);
+          const momentumChange = {
+            x: parseFloat(momentumTokens[1]),
+            y: parseFloat(momentumTokens[2]),
+            z: parseFloat(momentumTokens[3]),
+          };
+
+          const dEnergyLine = lines[i++].trim();
+          const energyTokens = dEnergyLine.split(/[ =]+/).filter(Boolean);
+          const energyChange = parseFloat(energyTokens[1]);
+
+          const bodies: BodyConfig[] = [];
+          for (let j = 0; j < 3; j++) {
+            const bodyLine = lines[i++].trim();
+            const tokens = bodyLine.split(/\s+/).filter(Boolean);
+            const [id, posX, posY, posZ, velX, velY, velZ] = tokens;
+            const color = id === "0" ? "red" : id === "1" ? "blue" : "green";
+
+            bodies.push({
+              id,
+              position: {
+                x: parseFloat(posX),
+                y: parseFloat(posY),
+                z: parseFloat(posZ),
+              },
+              velocity: {
+                x: parseFloat(velX),
+                y: parseFloat(velY),
+                z: parseFloat(velZ),
+              },
+              mass: 1,
+              color,
+            });
+          }
+
+          parsedFrames.push({ momentumChange, energyChange, bodies });
+        }
+
+        setFrames(parsedFrames);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error loading simulation data:", error);
+        setError(error.message);
+        setIsLoading(false);
+      });
+
+    // Cleanup function
+    return () => {
+      setFrames([]);
+      setFrameIndex(0);
+      trailPositionsRef.current = [[], [], []];
+    };
+  }, [integrator, orbit]);
 
   useFrame(() => {
-    for (let i = 0; i < UPDATES_PER_FRAME; i++) {
-      const currentBodies = structuredClone(bodies);
+    if (frames.length === 0 || isLoading || error) return;
 
-      // Physics logic
-      switch (integrator) {
-        case "Neri (4th)":
-          neriUpdate(currentBodies, TIME_STEP);
-          console.log("neri is chosen");
-          break;
-        case "Ruth (3rd)":
-          ruthUpdate(currentBodies, TIME_STEP);
-          console.log("ruth is chosen");
-          break;
-        case "Verlet (2nd)":
-          verletUpdate(currentBodies, TIME_STEP);
-          console.log("verlet is chosen");
-          break;
-        case "Euler (1st)":
-          eulerUpdate(currentBodies, TIME_STEP);
-          console.log("euler is chosen");
-          break;
-        default:
-          neriUpdate(currentBodies, TIME_STEP);
-      }
+    setFrameIndex((prev) => (prev + 1) % frames.length);
+    const currentFrame = frames[frameIndex];
 
-      // Calculate momentum and energy
-      let totalMomentum = { x: 0, y: 0, z: 0 };
-      let kinetic = 0;
-
-      currentBodies.forEach((body) => {
-        totalMomentum.x += body.mass * body.velocity.x;
-        totalMomentum.y += body.mass * body.velocity.y;
-        totalMomentum.z += body.mass * body.velocity.z;
-
-        kinetic +=
-          0.5 *
-          body.mass *
-          (body.velocity.x ** 2 + body.velocity.y ** 2 + body.velocity.z ** 2);
+    if (onStatsUpdate) {
+      onStatsUpdate({
+        momentumChange: currentFrame.momentumChange,
+        energyChange: currentFrame.energyChange,
+        velocities: currentFrame.bodies.map((b) => b.velocity),
       });
-
-      // Potential energy
-      let potential = 0;
-      for (let i = 0; i < currentBodies.length; i++) {
-        for (let j = i + 1; j < currentBodies.length; j++) {
-          const dx = currentBodies[j].position.x - currentBodies[i].position.x;
-          const dy = currentBodies[j].position.y - currentBodies[i].position.y;
-          const dz = currentBodies[j].position.z - currentBodies[i].position.z;
-          const r = Math.sqrt(dx * dx + dy * dy + dz * dz);
-          potential -= (1 * currentBodies[i].mass * currentBodies[j].mass) / r;
-        }
-      }
-
-      const totalEnergy = kinetic + potential;
-      const energyChange = totalEnergy - prevEnergy.current;
-      const momentumChange = {
-        x: totalMomentum.x - prevMomentum.current.x,
-        y: totalMomentum.y - prevMomentum.current.y,
-        z: totalMomentum.z - prevMomentum.current.z,
-      };
-
-      prevMomentum.current = totalMomentum;
-      prevEnergy.current = totalEnergy;
-      if (onStatsUpdate) {
-        onStatsUpdate({
-          momentumChange,
-          energyChange,
-          velocities: currentBodies.map((b) => ({ ...b.velocity })),
-        });
-      }
-
-      setBodies(currentBodies);
-
-      // Update body positions and trails
-      currentBodies.forEach((body, i) => {
-        bodiesRef.current[i]?.position.set(
-          body.position.x,
-          body.position.y,
-          body.position.z
-        );
-
-        const { positions, colors, sizes } = updateBodyTrail(
-          body,
-          trailPositionsRef.current[i],
-          TRAIL_LENGTH
-        );
-
-        if (trailRefs.current[i]) {
-          const trail = trailRefs.current[i];
-          trail?.setAttribute(
-            "position",
-            new BufferAttribute(new Float32Array(positions), 3)
-          );
-          trail?.setAttribute(
-            "color",
-            new BufferAttribute(new Float32Array(colors), 3)
-          );
-          trail?.setAttribute(
-            "size",
-            new BufferAttribute(new Float32Array(sizes), 1)
-          );
-
-          trail!.attributes.position.needsUpdate = true;
-          trail!.attributes.color.needsUpdate = true;
-          trail!.attributes.size.needsUpdate = true;
-        }
-      });
-      setBodies(currentBodies);
     }
   });
 
+  if (error) {
+    return (
+      <mesh>
+        <boxGeometry args={[1, 1, 1]} />
+        <meshStandardMaterial color="red" />
+      </mesh>
+    );
+  }
+
+  if (isLoading || frames.length === 0) {
+    return (
+      <>
+      <mesh>
+        <sphereGeometry args={[0.5, 16, 16]} />
+        <meshStandardMaterial color="gray" />
+      </mesh>
+      <ambientLight intensity={5} />
+      </>
+    );
+  }
+
   return (
     <>
-      {bodies.map((body, i) => (
+      {frames[frameIndex].bodies.map((body, i) => (
         <SimulationBody
           key={body.id}
           body={body}
           trailRef={(el) => {
             trailRefs.current[i] = el;
           }}
-          trailPositionsRef={trailPositionsRef.current[i]}
+          updateTrail={(positions) => {
+            const {
+              positions: newPositions,
+              colors,
+              sizes,
+            } = updateBodyTrail(body, positions, TRAIL_LENGTH);
+
+            if (trailRefs.current[i]) {
+              const trail = trailRefs.current[i];
+              trail?.setAttribute(
+                "position",
+                new BufferAttribute(newPositions, 3)
+              );
+              trail?.setAttribute("color", new BufferAttribute(colors, 3));
+              trail?.setAttribute("size", new BufferAttribute(sizes, 1));
+
+              if (trail?.attributes.position)
+                trail.attributes.position.needsUpdate = true;
+              if (trail?.attributes.color)
+                trail.attributes.color.needsUpdate = true;
+              if (trail?.attributes.size)
+                trail.attributes.size.needsUpdate = true;
+            }
+          }}
+          trailHistory={trailPositionsRef.current[i]}
         />
       ))}
-
-      {/* Lighting */}
       <ambientLight intensity={5} />
       <directionalLight position={[5, 5, 5]} intensity={17} />
     </>
   );
 }
 
-export default function ThreeBodySimulation({
+function ThreeBodySimulation({
   onStatsUpdate,
   integrator,
   orbit,
@@ -306,3 +354,5 @@ export default function ThreeBodySimulation({
     </Canvas>
   );
 }
+
+export default ThreeBodySimulation;

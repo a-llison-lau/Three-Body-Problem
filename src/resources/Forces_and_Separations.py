@@ -1,12 +1,3 @@
-"""
-CompMod Unit 1: We have defined two functions: compute_separations and compute_forces_potential.
-The first function calculates the separations between n particles, in each component, while the second function returns
-the total force acting on each particle (in each component) due to other forces, as well as the total potential of the system.
-
-Author: Henry Yip
-Number: S2231321
-
-"""
 import numpy as np
 
 def compute_separations(particles):   

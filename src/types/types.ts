@@ -17,5 +17,4 @@ export interface BodyConfig {
   velocity: Vector3;
   mass: number;
   color: string;
-  size: number;
 }
