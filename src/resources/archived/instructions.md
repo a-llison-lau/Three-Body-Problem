@@ -9,4 +9,4 @@ For animations run
 
 Refactored code
 cd src/resources
-python integration_loop_refactored.py 1000000 0.00001 initial_conditions.txt
+python integration_loop_refactored.py 3600 0.00001 initial_conditions.txt

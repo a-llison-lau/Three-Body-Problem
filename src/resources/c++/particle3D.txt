@@ -1,0 +1,155 @@
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <Eigen/Dense>
+
+//---------------------------------------------------------
+// Particle3D Class Definition using Eigen
+//---------------------------------------------------------
+class Particle3D {
+public:
+    // Attributes
+    std::string label;
+    double mass;
+    Eigen::Vector3d position;
+    Eigen::Vector3d velocity;
+
+    // Constructor
+    Particle3D(const std::string &label, double mass,
+               const Eigen::Vector3d &position,
+               const Eigen::Vector3d &velocity)
+        : label(label), mass(mass), position(position), velocity(velocity) {}
+
+    // Default Constructor
+    Particle3D()
+        : label(""), mass(0.0), position(Eigen::Vector3d::Zero()),
+          velocity(Eigen::Vector3d::Zero()) {}
+
+    // Return an XYZ-format string: label x y z
+    std::string toString() const {
+        std::ostringstream oss;
+        oss << label << "    " 
+            << position[0] << " " << position[1] << " " << position[2];
+        return oss.str();
+    }
+
+    // Compute kinetic energy: 1/2 * m * v^2
+    double kinetic_energy() const {
+        return 0.5 * mass * velocity.squaredNorm();
+    }
+
+    // Compute momentum: m * v (returns an Eigen::Vector3d)
+    Eigen::Vector3d momentum() const {
+        return mass * velocity;
+    }
+
+    // First-order position update: r' = r + v * dt
+    void update_position_1st(double dt) {
+        position += dt * velocity;
+    }
+
+    // Second-order position update: r' = r + dt*v + (dt^2/2)*(f/m)
+    void update_position_2nd(double dt, const Eigen::Vector3d &force) {
+        position += dt * velocity + (dt * dt * force) / (2.0 * mass);
+    }
+
+    // Update velocity: v' = v + dt*(f/m)
+    void update_velocity(double dt, const Eigen::Vector3d &force) {
+        velocity += dt * force / mass;
+    }
+
+    // Symplectic update of position: r += d_coeff * dt * v
+    void update_position_symplectic(double dt, double d_coeff) {
+        position += d_coeff * dt * velocity;
+    }
+
+    // Symplectic update of velocity: v += c_coeff * dt * (f/m)
+    void update_velocity_symplectic(double dt, const Eigen::Vector3d &force, double c_coeff) {
+        velocity += c_coeff * dt * force / mass;
+    }
+
+    // Euler methods (same as first-order updates)
+    void update_position_euler(double dt) {
+        update_position_1st(dt);
+    }
+    
+    void update_velocity_euler(double dt, const Eigen::Vector3d &force) {
+        update_velocity(dt, force);
+    }
+
+    //---------------------------------------------------------
+    // Static Methods
+    //---------------------------------------------------------
+
+    // Create a Particle3D instance from a line of text.
+    // Expected format: label <mass> <x> <y> <z> <vx> <vy> <vz>
+    static Particle3D read_line(const std::string &line) {
+        std::istringstream iss(line);
+        std::string label;
+        double mass, x, y, z, vx, vy, vz;
+        iss >> label >> mass >> x >> y >> z >> vx >> vy >> vz;
+        return Particle3D(label, mass, Eigen::Vector3d(x, y, z), Eigen::Vector3d(vx, vy, vz));
+    }
+
+    // Compute total kinetic energy of a list of particles
+    static double total_kinetic_energy(const std::vector<Particle3D> &particles) {
+        double totalKE = 0.0;
+        for (const auto &p : particles) {
+            totalKE += p.kinetic_energy();
+        }
+        return totalKE;
+    }
+
+    // Compute center-of-mass velocity of a list of particles
+    static Eigen::Vector3d com_velocity(const std::vector<Particle3D> &particles) {
+        Eigen::Vector3d totalMomentum = Eigen::Vector3d::Zero();
+        double totalMass = 0.0;
+        for (const auto &p : particles) {
+            totalMomentum += p.momentum();
+            totalMass += p.mass;
+        }
+        return totalMomentum / totalMass;
+    }
+};
+
+//---------------------------------------------------------
+// Main Function (Test the Particle3D Class)
+//---------------------------------------------------------
+int main() {
+    // Create a particle with label "A", mass 1.0, position (0,0,0), and velocity (1,2,3)
+    Particle3D particle("A", 1.0, Eigen::Vector3d(0.0, 0.0, 0.0), Eigen::Vector3d(1.0, 2.0, 3.0));
+    
+    std::cout << "Initial Particle: " << particle.toString() << std::endl;
+    std::cout << "Initial Kinetic Energy: " << particle.kinetic_energy() << std::endl;
+
+    // Update position using 1st order (Euler)
+    double dt = 0.1;
+    particle.update_position_1st(dt);
+    std::cout << "After update_position_1st: " << particle.toString() << std::endl;
+
+    // Update velocity using a given force vector (example: force = [1, 0, 0])
+    Eigen::Vector3d force(1.0, 0.0, 0.0);
+    particle.update_velocity(dt, force);
+    std::cout << "After update_velocity, new velocity = [" 
+              << particle.velocity[0] << ", "
+              << particle.velocity[1] << ", "
+              << particle.velocity[2] << "]" << std::endl;
+
+    // Read a particle from a line of text
+    std::string line = "B 2.0 1.0 2.0 3.0 0.5 0.5 0.5";
+    Particle3D particleB = Particle3D::read_line(line);
+    std::cout << "Read Particle: " << particleB.toString() << std::endl;
+
+    // Compute total kinetic energy of a list of particles
+    std::vector<Particle3D> particles = {particle, particleB};
+    std::cout << "Total Kinetic Energy: " 
+              << Particle3D::total_kinetic_energy(particles) << std::endl;
+
+    // Compute center-of-mass velocity of these particles
+    Eigen::Vector3d comVel = Particle3D::com_velocity(particles);
+    std::cout << "Center-of-Mass Velocity = [" 
+              << comVel[0] << ", " << comVel[1] << ", " << comVel[2] << "]" << std::endl;
+
+    return 0;
+}

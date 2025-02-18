@@ -6,11 +6,13 @@ import time
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 from typing import List, Tuple, Dict
+import copy
+import os
 
 class SimulationConfig:
     """Configuration class for simulation parameters"""
     def __init__(self, num_steps: int, dt: float, proximity_threshold: float = 100):
-        self.output_interval = 0.1
+        self.output_interval = 0.05
         self.dt = dt
         self.proximity_threshold = proximity_threshold
         
@@ -27,6 +29,14 @@ class Integrator:
     """Class handling different integration methods"""
     # Symplectic integrator coefficients
     COEFFICIENTS = {
+        1: {
+            "c": [1],
+            "d": [1]
+        },
+        2: {
+            "c": [1/2, 1/2],
+            "d": [1, 0]
+        },
         3: {
             "c": [7/24, 3/4, -1/24],
             "d": [2/3, -2/3, 1]
@@ -48,31 +58,29 @@ class Integrator:
     }
     
     @staticmethod
-    def symplectic_step(particles: List[Particle3D], dt: float, forces: np.ndarray, coeffs: Dict[str, List[float]], steps: int) -> None:
+    def symplectic_step(particles: List[Particle3D], dt: float, coeffs: Dict[str, List[float]], steps: int) -> None:
         """Perform one step of symplectic integration"""
         for k in range(steps):
+            separations = Forces_and_Separations.compute_separations(particles)
+            forces, _ = Forces_and_Separations.compute_forces_potential(particles, separations)
+            
+            # First update all velocities
             for particle, force in zip(particles, forces):
                 particle.update_velocity_symplectic(dt, force, coeffs["c"][k])
+                
+            # Then update all positions
+            for particle in particles:
                 particle.update_position_symplectic(dt, coeffs["d"][k])
-        # print(f"position: {particle.position}, velocity: {particle.velocity}")
-
     
-    @staticmethod
-    def euler_step(particles: List[Particle3D], dt: float, forces: np.ndarray) -> None:
-        """Perform one step of Euler integration"""
-        for particle in particles:
-            particle.update_position_euler(dt)
-        for particle, force in zip(particles, forces):
-            particle.update_velocity_euler(dt, force)
-    
-    @staticmethod
-    def verlet_step(particles: List[Particle3D], dt: float, forces: np.ndarray, 
-                    forces_updated: np.ndarray) -> None:
-        """Perform one step of Velocity Verlet integration"""
-        for particle, force in zip(particles, forces):
-            particle.update_position_2nd(dt, force)
-        for particle, force, force_updated in zip(particles, forces, forces_updated):
-            particle.update_velocity(dt, 0.5 * (force + force_updated))
+    # @staticmethod
+    # def euler_step(particles: List[Particle3D], dt: float) -> None:
+    #     """Perform one step of Euler integration"""
+    #     separations = Forces_and_Separations.compute_separations(particles)
+    #     forces, _ = Forces_and_Separations.compute_forces_potential(particles, separations)
+    #     for particle, force in zip(particles, forces):
+    #         particle.update_velocity_euler(dt, force)
+    #     for particle in particles:
+    #         particle.update_position_euler(dt)
 
 def parse_initial_conditions(file_path: str) -> List[InitialCondition]:
     """Parse the initial conditions file and return a list of configurations"""
@@ -111,14 +119,21 @@ class NBodySimulation:
         self.config = config
         self.next_output_time = 0.0  # Track when to write next output
     
+    def _reset_simulation_state(self):
+        """Reset simulation state variables between runs"""
+        self.next_output_time = 0.0  # Reset output timing
+    
     def run_simulation(self, initial_condition: InitialCondition, method: int) -> None:
         """Run simulation for a specific initial condition"""
-        self.particles = initial_condition.particles.copy()
+        # Reset state at the start of each run
+        self._reset_simulation_state()
+        
+        self.particles = copy.deepcopy(initial_condition.particles)
         self.n_particles = len(self.particles)
         self._initialize_system()
         
         output_file_path = f"/Users/allisonlau/VSCodeProjects/three-body/public/position_files/{method}/{initial_condition.name}.txt"
-        print(f"\nProcessing configuration: {initial_condition.name}")
+        print(f"\nProcessing configuration: {initial_condition.name} with method {method}")
         
         # Initialize arrays based on number of integration steps
         times = np.zeros(self.config.num_integration_steps)
@@ -132,14 +147,25 @@ class NBodySimulation:
         forces, _ = Forces_and_Separations.compute_forces_potential(self.particles, separations)
         
         with open(output_file_path, "w") as output_file:
+            # Write initial state
+            self._record_state(0, momentum_history, energy, 0.0, output_file)
+            
             for step in tqdm(range(self.config.num_integration_steps), 
-                           desc=f"Simulating {initial_condition.name}",
+                           desc=f"Simulating {initial_condition.name} (method {method})",
                            ncols=100):
                 current_time = self._run_step(method, step, current_time, forces, momentum_history, 
                                            times, energy, output_file)
                 if current_time is None:  # Simulation terminated early
+                    print(f"\nSimulation terminated early for {initial_condition.name} with method {method}")
                     break
         
+        # Verify file was written
+        try:
+            file_size = os.path.getsize(output_file_path)
+            print(f"File size for {initial_condition.name} (method {method}): {file_size} bytes")
+        except OSError as e:
+            print(f"Error checking file {output_file_path}: {e}")
+            
         self._print_statistics(initial_condition.name, energy, momentum_history, output_file_path)
     
     def _initialize_system(self) -> None:
@@ -161,32 +187,29 @@ class NBodySimulation:
         current_time += self.config.dt
         
         # Integration step
-        if method in (3, 4):
+        if method in [3, 4]:
             steps = method
-            separations = Forces_and_Separations.compute_separations(self.particles)
-            forces, potential = Forces_and_Separations.compute_forces_potential(self.particles, separations)
-            Integrator.symplectic_step(self.particles, self.config.dt, forces, 
-                                     Integrator.COEFFICIENTS[method], steps)
-        elif method == 1:
-            Integrator.euler_step(self.particles, self.config.dt, forces)
-        elif method == 2:
-            Integrator.verlet_step(self.particles, self.config.dt, forces, forces)
+            Integrator.symplectic_step(self.particles, self.config.dt, Integrator.COEFFICIENTS[method], steps)
+        # elif method == 1:
+        #     Integrator.euler_step(self.particles, self.config.dt)
+        # elif method == 2:
+        #     Integrator.verlet_step(self.particles, self.config.dt, forces, forces)
         
         # Update system state
         separations = Forces_and_Separations.compute_separations(self.particles)
         if self._check_proximity(separations):
             # Record final state before terminating
-            forces, potential = Forces_and_Separations.compute_forces_potential(self.particles, separations)
+            _, potential = Forces_and_Separations.compute_forces_potential(self.particles, separations)
             kinetic = Particle3D.total_kinetic_energy(self.particles)
             energy[step] = kinetic + potential
             mx, my, mz, mt = self._calculate_momentum()
             for key, value in zip(['x', 'y', 'z', 'total'], [mx, my, mz, mt]):
                 momentum_history[key].append(value)
             
-            self._plot_results(times[:step + 1], momentum_history)
+            # self._plot_results(times[:step + 1], momentum_history)
             return None
             
-        forces, potential = Forces_and_Separations.compute_forces_potential(self.particles, separations)
+        _, potential = Forces_and_Separations.compute_forces_potential(self.particles, separations)
         
         # Always record energy and momentum for every step
         kinetic = Particle3D.total_kinetic_energy(self.particles)
@@ -273,8 +296,8 @@ def main():
         print("Note: num_output_steps represents how many 0.01 time intervals to simulate")
         sys.exit(1)
     
-    if float(sys.argv[2]) > 0.1:
-        print("Usage: Maximum dt 0.1")
+    if float(sys.argv[2]) > 0.05:
+        print("Usage: Maximum dt 0.05")
         sys.exit(1)
     
     start_time = time.time()
@@ -300,7 +323,7 @@ def main():
     print(f"Using {config.num_integration_steps} integration steps with dt={config.dt}")
     
     for initial_condition in initial_conditions:
-        for method in [1, 2, 3, 4]:
+        for method in [1, 3, 4]:
             simulation.run_simulation(initial_condition=initial_condition, method=method)
     
     print(f"\nTotal run time: {time.time() - start_time:.2f} seconds")
