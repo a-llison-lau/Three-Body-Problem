@@ -188,9 +188,9 @@ function Orbit({ onStatsUpdate, integrator, orbit }: OrbitProps) {
     "Butterfly II": "butterfly2.txt",
     "Butterfly III": "butterfly3.txt",
     "Butterfly IV": "butterfly4.txt",
-    Bumblebee: "bumblebee.txt",
-    Dragonfly: "dragonfly.txt",
-    Lagrange: "lagrange.txt",
+    "Bumblebee": "bumblebee.txt",
+    "Dragonfly": "dragonfly.txt",
+    "Lagrange": "lagrange.txt",
     "Moth I": "moth1.txt",
     "Moth II": "moth2.txt",
     "Moth III": "moth3.txt",
@@ -209,9 +209,11 @@ function Orbit({ onStatsUpdate, integrator, orbit }: OrbitProps) {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
+        console.log("File loaded successfully");
         return response.text();
       })
       .then((text) => {
+        console.log("File content:", text);
         const parsedFrames: FrameData[] = [];
         const lines = text.split(/\r?\n/).filter((line) => line.trim() !== "");
 
@@ -254,6 +256,7 @@ function Orbit({ onStatsUpdate, integrator, orbit }: OrbitProps) {
           }
 
           parsedFrames.push({ momentumChange, energyChange, bodies });
+          console.log("Parsed frames:", parsedFrames);
         }
 
         setFrames(parsedFrames);
@@ -303,11 +306,12 @@ function Orbit({ onStatsUpdate, integrator, orbit }: OrbitProps) {
   if (isLoading || frames.length === 0) {
     return (
       <>
-        <mesh>
-          <sphereGeometry args={[0.5, 16, 16]} />
-          <meshStandardMaterial color="gray" />
+        <mesh rotation={[1, 1, 1]}>
+          <boxGeometry args={[0.2, 0.2, 0.2]} />
+          <meshStandardMaterial color="skyblue" />
         </mesh>
-        <ambientLight intensity={5} />
+        <ambientLight intensity={2} />
+        <directionalLight position={[5, 5, 5]} intensity={5} />
       </>
     );
   }

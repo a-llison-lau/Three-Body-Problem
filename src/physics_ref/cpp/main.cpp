@@ -131,7 +131,8 @@ public:
 
         std::string output_path = "../../../public/position_files/" + std::to_string(method) + "/";
         std::filesystem::create_directories(output_path);
-        std::string output_file_path = output_path + initial_condition.name + ".txt";
+        std::string modified_name = initial_condition.name.substr(0, initial_condition.name.size() - 1);
+        std::string output_file_path = output_path + modified_name + ".txt";
 
         std::cout << "\nProcessing configuration: " << initial_condition.name
                   << " with method " << method << std::endl;
