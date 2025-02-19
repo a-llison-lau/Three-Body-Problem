@@ -4,7 +4,9 @@
 
 The Three-Body Problem is far from fully solved despite centuries of effort. The restricted Euler Problem is a special case in which two bodies are fixed in place, resulting in two poisson-commuting conserved quantities, allowing the system to be fully integrable by the Liouville-Arnold theorem. We simulate the restricted Euler problem and visualize known orbits from literature.
 
-## 1. Setup for Development (Local)
+The visualization is at [here](https://three-body-problem.vercel.app/).
+
+## 1. Contributing
 
 To contribute to this project, make a fork and,
 

@@ -143,8 +143,6 @@ class NBodySimulation:
         }
         
         current_time = 0.0
-        separations = Forces_and_Separations.compute_separations(self.particles)
-        forces, _ = Forces_and_Separations.compute_forces_potential(self.particles, separations)
         
         with open(output_file_path, "w") as output_file:
             # Write initial state
@@ -153,8 +151,7 @@ class NBodySimulation:
             for step in tqdm(range(self.config.num_integration_steps), 
                            desc=f"Simulating {initial_condition.name} (method {method})",
                            ncols=100):
-                current_time = self._run_step(method, step, current_time, forces, momentum_history, 
-                                           times, energy, output_file)
+                current_time = self._run_step(method, step, current_time, momentum_history, times, energy, output_file)
                 if current_time is None:  # Simulation terminated early
                     print(f"\nSimulation terminated early for {initial_condition.name} with method {method}")
                     break
@@ -181,19 +178,14 @@ class NBodySimulation:
             momentum += particle.velocity * particle.mass
         return (*momentum, np.sum(momentum))
     
-    def _run_step(self, method: int, step: int, current_time: float, forces: np.ndarray, momentum_history: Dict, times: np.ndarray, energy: np.ndarray, output_file) -> float:
+    def _run_step(self, method: int, step: int, current_time: float, momentum_history: Dict, times: np.ndarray, energy: np.ndarray, output_file) -> float:
         """Run a single simulation step"""
         times[step] = current_time
         current_time += self.config.dt
         
         # Integration step
-        if method in [3, 4]:
-            steps = method
-            Integrator.symplectic_step(self.particles, self.config.dt, Integrator.COEFFICIENTS[method], steps)
-        # elif method == 1:
-        #     Integrator.euler_step(self.particles, self.config.dt)
-        # elif method == 2:
-        #     Integrator.verlet_step(self.particles, self.config.dt, forces, forces)
+        steps = method
+        Integrator.symplectic_step(self.particles, self.config.dt, Integrator.COEFFICIENTS[method], steps)
         
         # Update system state
         separations = Forces_and_Separations.compute_separations(self.particles)
@@ -323,7 +315,7 @@ def main():
     print(f"Using {config.num_integration_steps} integration steps with dt={config.dt}")
     
     for initial_condition in initial_conditions:
-        for method in [1, 3, 4]:
+        for method in [1, 2, 3, 4]:
             simulation.run_simulation(initial_condition=initial_condition, method=method)
     
     print(f"\nTotal run time: {time.time() - start_time:.2f} seconds")

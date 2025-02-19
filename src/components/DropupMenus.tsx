@@ -9,6 +9,7 @@ const orbitOptions = [
   "Butterfly III",
   "Butterfly IV",
   "Dragonfly",
+  "Lagrange",
   "Figure of 8",
   "Moth I",
   "Moth II",

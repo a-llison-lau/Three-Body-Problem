@@ -39,7 +39,7 @@ const VERTEX_SHADER = `
   void main() {
     vColor = color;
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-    gl_PointSize = size * (300.0 / -mvPosition.z);
+    gl_PointSize = size * (300.0 / max(1.0, -mvPosition.z));
     gl_Position = projectionMatrix * mvPosition;
   }
 `;
@@ -48,12 +48,18 @@ const FRAGMENT_SHADER = `
   varying vec3 vColor;
     
   void main() {
-    gl_FragColor = vec4(vColor, 1.0 - length(gl_PointCoord - vec2(0.5)) * 2.0);
+    float alpha = 1.0 - length(gl_PointCoord - vec2(0.5)) * 2.0;
+    alpha = clamp(alpha, 0.0, 1.0);
+    gl_FragColor = vec4(vColor, alpha);
   }
 `;
 
 // Constants
 const TRAIL_LENGTH = 1200;
+const SPHERE_SIZE = 0.07;
+const TRAIL_START_SIZE = SPHERE_SIZE * 3;
+const TARGET_FPS = 30; // Set desired FPS
+const FRAME_INTERVAL = Math.floor(60 / TARGET_FPS); // Calculate frame skip interval
 
 // Utility function for trail updates
 function updateBodyTrail(
@@ -74,21 +80,25 @@ function updateBodyTrail(
   const colors = new Float32Array(trailPositions.length);
   const sizes = new Float32Array(trailPositions.length / 3);
 
+  // Parse body color to RGB values
+  const bodyColor =
+    body.color === "red"
+      ? [1, 0, 0]
+      : body.color === "blue"
+      ? [0, 0, 1]
+      : [0, 1, 0];
+
   // Fill color and size arrays
   for (let i = 0; i < positions.length / 3; i++) {
     const alpha = i / (positions.length / 3);
-    // Parse color string to RGB values
-    const color =
-      body.color === "red"
-        ? [1, 0, 0]
-        : body.color === "blue"
-        ? [0, 0, 1]
-        : [0, 1, 0];
 
-    colors[i * 3] = color[0];
-    colors[i * 3 + 1] = color[1];
-    colors[i * 3 + 2] = color[2];
-    sizes[i] = alpha * 2;
+    // Color interpolation from body color to white
+    colors[i * 3] = bodyColor[0] + (1 - bodyColor[0]) * (1 - alpha); // Red
+    colors[i * 3 + 1] = bodyColor[1] + (1 - bodyColor[1]) * (1 - alpha); // Green
+    colors[i * 3 + 2] = bodyColor[2] + (1 - bodyColor[2]) * (1 - alpha); // Blue
+
+    // Size decreases along the trail
+    sizes[i] = TRAIL_START_SIZE * alpha;
   }
 
   return { positions, colors, sizes };
@@ -107,6 +117,8 @@ function SimulationBody({
   updateTrail,
   trailHistory,
 }: SimulationBodyProps) {
+  const frameCounter = useRef(0);
+
   const shaderMaterial = useMemo(
     () =>
       new ShaderMaterial({
@@ -119,15 +131,17 @@ function SimulationBody({
     []
   );
 
-  // Update trail on each frame
   useFrame(() => {
-    updateTrail(trailHistory);
+    frameCounter.current += 1;
+    if (frameCounter.current % FRAME_INTERVAL === 0) {
+      updateTrail(trailHistory);
+    }
   });
 
   return (
     <>
       <mesh position={[body.position.x, body.position.y, body.position.z]}>
-        <sphereGeometry args={[0.1, 32, 32]} />
+        <sphereGeometry args={[SPHERE_SIZE, 32, 32]} />
         <meshStandardMaterial color={body.color} />
       </mesh>
 
@@ -158,6 +172,8 @@ function Orbit({ onStatsUpdate, integrator, orbit }: OrbitProps) {
   const trailRefs = useRef<(BufferGeometry | null)[]>([null, null, null]);
   const trailPositionsRef = useRef<number[][]>([[], [], []]);
 
+  const frameCounter = useRef(0);
+
   // Mapping constants
   const integratorMap: { [key: string]: string } = {
     "Neri (4th)": "4",
@@ -172,8 +188,9 @@ function Orbit({ onStatsUpdate, integrator, orbit }: OrbitProps) {
     "Butterfly II": "butterfly2.txt",
     "Butterfly III": "butterfly3.txt",
     "Butterfly IV": "butterfly4.txt",
-    "Bumblebee": "bumblebee.txt",
-    "Dragonfly": "dragonfly.txt",
+    Bumblebee: "bumblebee.txt",
+    Dragonfly: "dragonfly.txt",
+    Lagrange: "lagrange.txt",
     "Moth I": "moth1.txt",
     "Moth II": "moth2.txt",
     "Moth III": "moth3.txt",
@@ -259,15 +276,18 @@ function Orbit({ onStatsUpdate, integrator, orbit }: OrbitProps) {
   useFrame(() => {
     if (frames.length === 0 || isLoading || error) return;
 
-    setFrameIndex((prev) => (prev + 1) % frames.length);
-    const currentFrame = frames[frameIndex];
+    frameCounter.current += 1;
+    if (frameCounter.current % FRAME_INTERVAL === 0) {
+      setFrameIndex((prev) => (prev + 1) % frames.length);
+      const currentFrame = frames[frameIndex];
 
-    if (onStatsUpdate) {
-      onStatsUpdate({
-        momentumChange: currentFrame.momentumChange,
-        energyChange: currentFrame.energyChange,
-        velocities: currentFrame.bodies.map((b) => b.velocity),
-      });
+      if (onStatsUpdate) {
+        onStatsUpdate({
+          momentumChange: currentFrame.momentumChange,
+          energyChange: currentFrame.energyChange,
+          velocities: currentFrame.bodies.map((b) => b.velocity),
+        });
+      }
     }
   });
 
@@ -283,11 +303,11 @@ function Orbit({ onStatsUpdate, integrator, orbit }: OrbitProps) {
   if (isLoading || frames.length === 0) {
     return (
       <>
-      <mesh>
-        <sphereGeometry args={[0.5, 16, 16]} />
-        <meshStandardMaterial color="gray" />
-      </mesh>
-      <ambientLight intensity={5} />
+        <mesh>
+          <sphereGeometry args={[0.5, 16, 16]} />
+          <meshStandardMaterial color="gray" />
+        </mesh>
+        <ambientLight intensity={5} />
       </>
     );
   }
