@@ -11,9 +11,14 @@ const orbitOptions = [
   "Dragonfly",
   "Lagrange",
   "Figure of 8",
+  "Goggles",
   "Moth I",
   "Moth II",
   "Moth III",
+  "Yarn",
+  "Yin-Yang I",
+  "Yin-Yang II",
+  "Yin-Yang III",
 ];
 
 // Integrator options

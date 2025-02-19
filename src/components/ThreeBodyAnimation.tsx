@@ -190,10 +190,15 @@ function Orbit({ onStatsUpdate, integrator, orbit }: OrbitProps) {
     "Butterfly IV": "butterfly4.txt",
     "Bumblebee": "bumblebee.txt",
     "Dragonfly": "dragonfly.txt",
-    "Lagrange": "lagrange.txt",
+    "Goggles": "goggle.txt",
+    "Lagrange": "lagrang.txt",
     "Moth I": "moth1.txt",
     "Moth II": "moth2.txt",
     "Moth III": "moth3.txt",
+    "Yarn": "yar.txt",
+    "Yin-Yang I": "yin-yang1.txt",
+    "Yin-Yang II": "yin-yang2.txt",
+    "Yin-Yang III": "yin-yang3.txt"
   };
 
   useEffect(() => {
