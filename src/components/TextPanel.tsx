@@ -72,11 +72,47 @@ const RenderContent = ({ node }: { node: ContentNode }) => {
           ))}
         </div>
       );
+    case "table":
+      if (!node.headers || !node.rows) {
+        return null; // Skip rendering if table data is missing
+      }
+      return (
+        <div className="my-4 overflow-x-auto">
+          <table className="min-w-full divide-y divide-zinc-700">
+            <thead>
+              <tr>
+                {node.headers.map((header, index) => (
+                  <th
+                    key={index}
+                    className="px-4 py-3 text-left text-sm font-semibold bg-zinc-800"
+                  >
+                    <MathJax>{header}</MathJax>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-700">
+              {node.rows.map((row, rowIndex) => (
+                <tr key={rowIndex} className="hover:bg-zinc-800/50">
+                  {row.map((cell, cellIndex) => (
+                    <td
+                      key={cellIndex}
+                      className="px-4 py-2 text-sm whitespace-nowrap"
+                    >
+                      <MathJax>{cell}</MathJax>
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
     case "text":
       return (
         <div className="overflow-x-auto">
           <MathJax hideUntilTypeset={"first"}>
-            {node.content.split("\n").map(
+            {node.content?.split("\n").map(
               (paragraph, index) =>
                 paragraph.trim() && (
                   <p key={index} className="mb-4">

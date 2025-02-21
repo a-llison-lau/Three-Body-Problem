@@ -8,6 +8,11 @@ export function parseMarkdown(markdown: string): ContentNode[] {
   let currentH3: ContentNode | null = null;
   let currentH4: ContentNode | null = null;
 
+  // Table parsing state
+  let isInTable = false;
+  let tableHeaders: string[] = [];
+  let tableRows: string[][] = [];
+
   // Buffer to accumulate text lines before adding them to a section
   let textBuffer: string[] = [];
 
@@ -29,65 +34,120 @@ export function parseMarkdown(markdown: string): ContentNode[] {
     }
   }
 
-  lines.forEach((line) => {
-    if (line.startsWith("# ")) {
-      // Flush text before creating new section
-      flushTextBuffer();
+  function addTableToCurrentNode() {
+    if (tableHeaders.length > 0 && tableRows.length > 0) {
+      const currentNode = currentH4 || currentH3 || currentH2 || currentH1;
+      if (currentNode) {
+        currentNode.children.push({
+          type: "table",
+          headers: tableHeaders,
+          rows: tableRows,
+          children: [],
+        });
+      }
+      // Reset table state
+      tableHeaders = [];
+      tableRows = [];
+      isInTable = false;
+    }
+  }
 
+  lines.forEach((line, index) => {
+    const trimmedLine = line.trim();
+
+    // Table parsing
+    if (trimmedLine.startsWith("|") && trimmedLine.endsWith("|")) {
+      // Flush any accumulated text before starting table
+      if (!isInTable) {
+        flushTextBuffer();
+      }
+
+      const cells = trimmedLine
+        .split("|")
+        .slice(1, -1)
+        .map(cell => cell.trim());
+
+      if (!isInTable) {
+        // This is the header row
+        isInTable = true;
+        tableHeaders = cells;
+        return; // Skip the rest of this iteration
+      }
+
+      // Check if this is the separator row (contains only -, :, and |)
+      if (cells.every(cell => /^[-:]+$/.test(cell))) {
+        return; // Skip the separator row
+      }
+
+      // This is a data row
+      tableRows.push(cells);
+
+      // Check if this is the last row (no more table rows follow)
+      const nextLine = lines[index + 1]?.trim() || "";
+      if (!nextLine.startsWith("|")) {
+        addTableToCurrentNode();
+      }
+      return;
+    } else if (isInTable) {
+      // We've exited the table
+      addTableToCurrentNode();
+    }
+
+    // Regular markdown parsing
+    if (trimmedLine.startsWith("# ")) {
+      flushTextBuffer();
       currentH1 = {
         type: "h1",
-        content: line.slice(2).trim(),
+        content: trimmedLine.slice(2).trim(),
         children: [],
       };
       root.push(currentH1);
       currentH2 = null;
       currentH3 = null;
       currentH4 = null;
-    } else if (line.startsWith("## ")) {
+    } else if (trimmedLine.startsWith("## ")) {
       flushTextBuffer();
-
       if (currentH1) {
         currentH2 = {
           type: "h2",
-          content: line.slice(3).trim(),
+          content: trimmedLine.slice(3).trim(),
           children: [],
         };
         currentH1.children.push(currentH2);
         currentH3 = null;
         currentH4 = null;
       }
-    } else if (line.startsWith("### ")) {
+    } else if (trimmedLine.startsWith("### ")) {
       flushTextBuffer();
-
       if (currentH2) {
         currentH3 = {
           type: "h3",
-          content: line.slice(4).trim(),
+          content: trimmedLine.slice(4).trim(),
           children: [],
         };
         currentH2.children.push(currentH3);
         currentH4 = null;
       }
-    } else if (line.startsWith("#### ")) {
+    } else if (trimmedLine.startsWith("#### ")) {
       flushTextBuffer();
-
       if (currentH3) {
         currentH4 = {
           type: "h4",
-          content: line.slice(5).trim(),
+          content: trimmedLine.slice(5).trim(),
           children: [],
         };
         currentH3.children.push(currentH4);
       }
-    } else {
+    } else if (trimmedLine && !isInTable) {
       // Accumulate text content
-      if (line.trim()) {
-        textBuffer.push(line);
-      }
+      textBuffer.push(line);
     }
   });
 
-  // Flush any remaining text at the end
+  // Flush any remaining text or table at the end
+  if (isInTable) {
+    addTableToCurrentNode();
+  }
   flushTextBuffer();
 
   return root;
