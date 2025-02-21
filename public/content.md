@@ -73,7 +73,7 @@ Table 2: Comparison of Ruth, Neri, Verlet and Euler Methods (Bumblebee Orbit)
 
 Table 3: Comparison of Ruth, Neri, Verlet and Euler Methods (Moth Orbit)
 
-### Analytical Orbits
+# Analytical Orbits
 
 The general Three-Body Problem is not analytic. However, special orbits that are analytical are found.
 
