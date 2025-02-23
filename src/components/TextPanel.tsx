@@ -154,9 +154,7 @@ function TextPanel({ isOpen, onToggle }: TextPanelProps) {
 
       <div
         className={`relative text-zinc-300 p-4 h-full overflow-x-hidden overflow-y-auto rounded-lg shadow-lg transform transition-all duration-1000 ease-in-out bg-black ${
-          isOpen
-            ? "translate-x-0 md:w-1/3"
-            : "-translate-x-full w-0"
+          isOpen ? "translate-x-0 md:w-1/3" : "-translate-x-full w-0"
         }`}
         style={{
           height: "92vh",

@@ -261,15 +261,15 @@ function ShapeSpherePlotter({ integrator, orbit }: ShapeSpherePlotterProps) {
   }, [orbit]);
 
   return (
-    <div className="absolute bottom-36 right-4 w-48 h-48 supports-backdrop-blur:bg-white/90 backdrop-blur-xl  overflow-hidden rounded-lg">
+    <div className="absolute bottom-36 right-4 w-48 h-48 overflow-hidden rounded-lg">
       <div className="relative w-full h-full">
         {loading && (
-          <div className="absolute inset-0 flex items-center justify-center supports-backdrop-blur:bg-white/90 backdrop-blur-xl">
+          <div className="absolute inset-0 flex items-center justify-center">
             <Loader2 className="w-8 h-8 animate-spin" />
           </div>
         )}
         {error && (
-          <div className="absolute inset-0 flex items-center justify-center supports-backdrop-blur:bg-white/90 backdrop-blur-xl ">
+          <div className="absolute inset-0 flex items-center justify-center">
             {error}
           </div>
         )}
