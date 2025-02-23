@@ -3,6 +3,7 @@ import ThreeBodyAnimation from "./ThreeBodyAnimation";
 import StatsDisplay from "./StatsDisplay";
 import { useState } from "react";
 import { Vector3 } from "../types/types";
+import ShapeSpherePlotter from "./ShapeSpherePlotter";
 
 interface CanvasProps {
   isTextPanelOpen: boolean;
@@ -28,6 +29,10 @@ function Canvas({ isTextPanelOpen }: CanvasProps) {
       <div className="w-full h-full bg-black">
         <ThreeBodyAnimation
           onStatsUpdate={setSimulationStats}
+          integrator={selectedIntegrator}
+          orbit={selectedOrbit}
+        />
+        <ShapeSpherePlotter
           integrator={selectedIntegrator}
           orbit={selectedOrbit}
         />
