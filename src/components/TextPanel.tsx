@@ -153,15 +153,15 @@ function TextPanel({ isOpen, onToggle }: TextPanelProps) {
       )}
 
       <div
-        className={`relative text-zinc-300 p-4 h-full overflow-x-hidden overflow-y-auto rounded-lg shadow-lg transform transition-all duration-1000 ease-in-out ${
+        className={`relative text-zinc-300 p-4 h-full overflow-x-hidden overflow-y-auto rounded-lg shadow-lg transform transition-all duration-1000 ease-in-out bg-black ${
           isOpen
-            ? "opacity-100 translate-x-0 md:w-1/3"
-            : "opacity-0 -translate-x-full w-0"
+            ? "translate-x-0 md:w-1/3"
+            : "-translate-x-full w-0"
         }`}
         style={{
           height: "92vh",
           boxShadow: "6px 6px 17px 2px rgba(49, 49, 49, 0.5)",
-          zIndex: 10,
+          zIndex: 15,
         }}
       >
         {isOpen && (
