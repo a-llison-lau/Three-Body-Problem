@@ -145,7 +145,7 @@ function SimulationBody({
         <meshStandardMaterial color={body.color} />
       </mesh>
 
-      <points>
+      <points frustumCulled={false}>
         <bufferGeometry ref={trailRef} />
         <primitive object={shaderMaterial} />
       </points>
