@@ -84,3 +84,50 @@ For each two-body system, there exist $5$ points of equilibrium, in which there 
 ## Figure-8 Orbit
 
 The most iconic of all the periodic orbits, in the Figure-8 orbit, the three bodies appear to have the same trajectory as the first body, except for a different phase. This allows the trajectories to form a knot-like figure-8 shape.
+
+
+## Shape Sphere
+
+In a three-body problem, the bodies act on each other based on gravitational forces. Therefore, the effect of translation can be excluded.
+
+
+It is convenient to map $\mathbb{C}^2$ to $\R^3$, as we can then rescale and plot the resulting coordinates on a unit sphere. 
+
+This resultant sphere is named the "shape sphere", which can be defined as:
+
+$$
+\left(z_1, z_2\right)=\mathcal{J}\left(x_1, x_2, x_3\right)=\left(\frac{1}{\sqrt{2}}\left(x_3-x_2\right), \sqrt{\frac{2}{3}}\left(x_1-\frac{1}{2}\left(x_2+x_3\right)\right)\right).
+$$
+
+We then define the Hoft map:
+
+$$
+\mathcal{K}: \mathbb{C}^2 \rightarrow \R \times \mathbb{C} \cong \R^3
+$$
+
+specified by:
+
+$$
+\mathcal{K}\left(z_1, z_2\right)=\left(u_1, u_2+i u_3\right)=\left(\left|z_1\right|^2-\left|z_2\right|^2, 2 \bar{z}_1 z_2\right) .
+$$
+
+Each point on the shape sphere corresponds to a particular formulation of the three bodies. 
+
+$E_1$, $E_2$, and $E_3$ refer to the collinear configurations in the three-body problem where one of the bodies sits at the midpoint of the segment defined by the other two. Each configuration is distinguished by which mass is at the midpoint. The coordinates of $E_1$ to $E_3$ are:
+
+$$E_1 = (1, 0, 0), \quad E_2 = \left(-\frac{1}{2}, -\frac{\sqrt{3}}{2}, 0\right), \quad E_3 = \left(-\frac{1}{2}, \frac{\sqrt{3}}{2}, 0\right)$$
+
+
+$M_1$, $M_2$, and $M_3$ refer to specific isosceles configurations in the three-body problem where two of the bodies are equidistant, and the third body is positioned uniquely. Each configuration is distinguished by which mass forms the unique position.
+
+$M_i$ is a line on the sphere that runs from $E_i$ to its antipodal collision point $C_i$, which are positions on the sphere opposite to $E_i$. 
+
+The equilateral triangle formulation corresponds to $L_{\pm}$. They are located at $(0,0,1)$ and $(0,0,-1)$ respectively. 
+
+The visualisation of the shape sphere can be seen at the bottom right corner. 
+
+## Sources
+The code for the Three-body problem is formulated by Henry Yip, which is then edited by Allison Lau. The description and results presented above are from Henry Yip's summer project, supervised by Prof. Jenni Smillie and funded by the School of Physics and Astronomy, University of Edinburgh.
+For further details, please refer to Yip and Smillie (2025), An Analysis of the Restricted Euler Problem Using Symplectic Integrators, Edinburgh Student Journal of Science, 1(3), 1–6.
+ 
+ 
