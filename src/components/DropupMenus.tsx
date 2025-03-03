@@ -63,7 +63,7 @@ function DropupMenus({ onIntegratorChange, onOrbitChange }: DropupMenusProps) {
             )}
           </button>
           {orbitMenuOpen && (
-            <ul className="absolute bottom-full mb-2 w-32 supports-backdrop-blur:bg-white/90 backdrop-blur-xl text-zinc-300 rounded-md overflow-hidden">
+            <ul className="absolute bottom-full mb-2 w-36 supports-backdrop-blur:bg-white/90 backdrop-blur-xl text-zinc-300 rounded-md overflow-hidden max-h-60 overflow-y-auto">
               {orbitOptions.map((option, index) => (
                 <li
                   key={index}
@@ -104,7 +104,7 @@ function DropupMenus({ onIntegratorChange, onOrbitChange }: DropupMenusProps) {
           )}
         </button>
         {integratorMenuOpen && (
-          <ul className="absolute bottom-full mb-2 w-32 supports-backdrop-blur:bg-white/90 backdrop-blur-xl text-zinc-300 rounded-md overflow-hidden">
+          <ul className="absolute bottom-full mb-2 w-32 supports-backdrop-blur:bg-white/90 backdrop-blur-xl text-zinc-300 rounded-md overflow-hidden max-h-48 overflow-y-auto">
             {integratorOptions.map((option, index) => (
               <li
                 key={index}
