@@ -117,7 +117,7 @@ The equilateral triangle formulation corresponds to $L_{\pm}$. They are located 
 
 The visualisation of the shape sphere can be seen at the bottom right corner.
 
-### References
+## References
 
 [1] Yip and Smillie (2025), An Analysis of the Restricted Euler Problem Using Symplectic Integrators, Edinburgh Student Journal of Science, 1(3), 1–6.
 
