@@ -85,12 +85,11 @@ For each two-body system, there exist $5$ points of equilibrium, in which there 
 
 The most iconic of all the periodic orbits, in the Figure-8 orbit, the three bodies appear to have the same trajectory as the first body, except for a different phase. This allows the trajectories to form a knot-like figure-8 shape.
 
-
 # Shape Sphere
 
 In a three-body problem, the bodies act on each other based on gravitational forces. Therefore, the effect of translation can be excluded.
 
-It is convenient to map $\mathbb{C}^2$ to $\R^3$, as we can then rescale and plot the resulting coordinates on a unit sphere. 
+It is convenient to map $\mathbb{C}^2$ to $\mathbb{R}^3$, as we can then rescale and plot the resulting coordinates on a unit sphere.
 
 This resultant sphere is named the "shape sphere", which can be defined as:
 
@@ -98,7 +97,7 @@ $$\left(z_1, z_2\right)=\mathcal{J}\left(x_1, x_2, x_3\right)=\left(\frac{1}{\sq
 
 We then define the Hoft map:
 
-$$\mathcal{K}: \mathbb{C}^2 \rightarrow \R \times \mathbb{C} \cong \R^3$$
+$$\mathcal{K}: \mathbb{C}^2 \rightarrow \mathbb{R} \times \mathbb{C} \cong \mathbb{R}^3$$
 
 specified by:
 
@@ -112,14 +111,16 @@ $$E_1 = (1, 0, 0), \quad E_2 = \left(-\frac{1}{2}, -\frac{\sqrt{3}}{2}, 0\right)
 
 $M_1$, $M_2$, and $M_3$ refer to specific isosceles configurations in the three-body problem where two of the bodies are equidistant, and the third body is positioned uniquely. Each configuration is distinguished by which mass forms the unique position.
 
-$M_i$ is a line on the sphere that runs from $E_i$ to its antipodal collision point $C_i$, which are positions on the sphere opposite to $E_i$. 
+$M_i$ is a line on the sphere that runs from $E_i$ to its antipodal collision point $C_i$, which are positions on the sphere opposite to $E_i$.
 
-The equilateral triangle formulation corresponds to $L_{\pm}$. They are located at $(0,0,1)$ and $(0,0,-1)$ respectively. 
+The equilateral triangle formulation corresponds to $L_{\pm}$. They are located at $(0,0,1)$ and $(0,0,-1)$ respectively.
 
-The visualisation of the shape sphere can be seen at the bottom right corner. 
+The visualisation of the shape sphere can be seen at the bottom right corner.
 
-## Sources
-The code for the Three-body problem is formulated by Henry Yip, which is then edited by Allison Lau. The description and results presented above are from Henry Yip's summer project, supervised by Prof. Jenni Smillie and funded by the School of Physics and Astronomy, University of Edinburgh.
-For further details, please refer to Yip and Smillie (2025), An Analysis of the Restricted Euler Problem Using Symplectic Integrators, Edinburgh Student Journal of Science, 1(3), 1–6.
- 
- 
+### References
+
+[1] Yip and Smillie (2025), An Analysis of the Restricted Euler Problem Using Symplectic Integrators, Edinburgh Student Journal of Science, 1(3), 1–6.
+
+Henry Yip: Original python code and results, research project supervised by Prof. Jenni Smillie at the School of Physics and Astronomy, University of Edinburgh.
+
+Allison Lau: Web development, code optimization and adaptation.
