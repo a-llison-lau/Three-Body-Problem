@@ -124,3 +124,5 @@ The visualisation of the shape sphere can be seen at the bottom right corner.
 Henry Yip: Original python code and results, research project supervised by Prof. Jenni Smillie at the School of Physics and Astronomy, University of Edinburgh.
 
 Allison Lau: Web development, code optimization and adaptation.
+
+We thank Toby Lam for suggestions and bug fixing 🐛.
