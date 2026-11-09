@@ -22,7 +22,7 @@ const StatsDisplay = ({ stats }: StatsDisplayProps) => {
   };
 
   return (
-    <div className="flex justify-center items-center w-full overflow-x-auto supports-backdrop-blur:bg-white/90 backdrop-blur-xl p-2 rounded-md">
+    <div className="hidden md:flex justify-center items-center w-full overflow-x-auto supports-backdrop-blur:bg-white/90 backdrop-blur-xl p-2 rounded-md">
       <style>
         {`
             @import url('https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css');
