@@ -3,7 +3,6 @@ Particle3D, a class to describe point particles in 3D space. An instance describ
 velocity and position are [3] arrays
 
 Author: Henry Yip
-Number: S2231321
 """
 import numpy as np
 
