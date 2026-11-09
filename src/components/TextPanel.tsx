@@ -158,7 +158,7 @@ function TextPanel({ isOpen, onToggle }: TextPanelProps) {
         }`}
         style={{
           height: "92vh",
-          boxShadow: "6px 6px 17px 2px rgba(49, 49, 49, 0.5)",
+          boxShadow: isOpen ? "6px 6px 17px 2px rgba(49, 49, 49, 0.5)" : "none",
           zIndex: 15,
         }}
       >

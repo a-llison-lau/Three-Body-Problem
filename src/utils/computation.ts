@@ -81,18 +81,18 @@ const getMomentum = (body: BodyConfig): Vector3 => {
 };
 
 export const getCoMVelocity = (bodies: BodyConfig[]): Vector3 => {
-  let totalMomemtum = { x: 0, y: 0, z: 0 };
+  const totalMomentum = { x: 0, y: 0, z: 0 };
   let totalMass = 0;
   bodies.forEach((body) => {
     const momentum = getMomentum(body);
-    totalMomemtum.x += momentum.x;
-    totalMomemtum.y += momentum.y;
-    totalMomemtum.z += momentum.z;
+    totalMomentum.x += momentum.x;
+    totalMomentum.y += momentum.y;
+    totalMomentum.z += momentum.z;
     totalMass += body.mass;
   });
-  const CoMVelocityX = totalMomemtum.x / totalMass;
-  const CoMVelocityY = totalMomemtum.y / totalMass;
-  const CoMVelocityZ = totalMomemtum.z / totalMass;
+  const CoMVelocityX = totalMomentum.x / totalMass;
+  const CoMVelocityY = totalMomentum.y / totalMass;
+  const CoMVelocityZ = totalMomentum.z / totalMass;
 
   return { x: CoMVelocityX, y: CoMVelocityY, z: CoMVelocityZ };
 };

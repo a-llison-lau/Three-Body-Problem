@@ -372,8 +372,13 @@ function ThreeBodySimulation({
   integrator: string;
   orbit: string;
 }) {
+  // Move the camera back on narrow screens so the orbit stays in view.
+  // 0.767 is the tangent of half the default vertical field of view.
+  const aspect = window.innerWidth / window.innerHeight;
+  const cameraDistance = Math.max(2, 1.4 / (0.767 * aspect));
+
   return (
-    <Canvas camera={{ position: [0, 0, 2] }}>
+    <Canvas camera={{ position: [0, 0, cameraDistance] }}>
       <Orbit
         onStatsUpdate={onStatsUpdate}
         integrator={integrator}

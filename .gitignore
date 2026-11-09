@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+__pycache__/
+
+# Compiled simulation
+src/computation/cpp/*.o
+src/computation/cpp/simulation

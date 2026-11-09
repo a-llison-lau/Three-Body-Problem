@@ -1,8 +1,8 @@
 # Three Body Problem Visualization
 
-We simulate the restricted Euler problem and visualize known orbits from literature.
+We simulate periodic orbits of the three-body problem and visualize known orbits from the literature.
 
-The visualization is at [here](https://three-body-problem.vercel.app/).
+The visualization is [here](https://three-body-problem.vercel.app/).
 
 ![Preview](https://imgur.com/XpemDaf.gif)
 

@@ -6,7 +6,10 @@ import Authors from "./components/Authors";
 import Info from "./components/Info";
 
 function App() {
-  const [isTextPanelOpen, setIsTextPanelOpen] = useState(true);
+  // On phones the panel would cover the whole animation, so it starts closed there.
+  const [isTextPanelOpen, setIsTextPanelOpen] = useState(
+    () => window.innerWidth >= 768
+  );
 
   const handleTogglePanel = () => {
     setIsTextPanelOpen(!isTextPanelOpen);
